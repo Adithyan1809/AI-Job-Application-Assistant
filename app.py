@@ -193,8 +193,12 @@ st.markdown("---")
 st.markdown("### 📋 Discovered Opportunities")
 
 if not results:
-    # Check if there are cached results in the DB
-    cached = get_recent_jobs(limit=10)
+    # Check if there are cached results in the DB matching current search criteria
+    cached = get_recent_jobs(
+        limit=12,
+        role=role if "role" in locals() else None,
+        experience=experience if ("experience" in locals() and experience != "All") else None
+    )
     if cached:
         st.caption("Showing recently discovered opportunities from your search history:")
         results = cached

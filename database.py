@@ -106,6 +106,7 @@ def get_recent_jobs(
     limit: int = 100,
     role: Optional[str] = None,
     location: Optional[str] = None,
+    experience: Optional[str] = None,
     db_path: str = DATABASE_PATH
 ) -> List[JobListing]:
     """Retrieve recent jobs from search history with optional filters."""
@@ -120,6 +121,17 @@ def get_recent_jobs(
     if location and location.strip():
         query += " AND location LIKE ?"
         params.append(f"%{location.strip()}%")
+
+    if experience and experience.strip() and experience.lower() not in ("all", "all experience"):
+        exp_clean = experience.strip().lower()
+        if exp_clean in ("fresher", "0-1 years", "internship", "1-2 years"):
+            # Exclude senior positions
+            query += " AND (title NOT LIKE '%Senior%' AND title NOT LIKE '%Sr.%' AND title NOT LIKE '%Sr %' AND title NOT LIKE '%Lead%' AND title NOT LIKE '%Principal%' AND title NOT LIKE '%Staff%' AND title NOT LIKE '%Architect%' AND title NOT LIKE '%Manager%')"
+            if exp_clean == "internship":
+                query += " AND (title LIKE '%Intern%' OR experience LIKE '%Intern%' OR description LIKE '%Intern%')"
+        else:
+            query += " AND experience LIKE ?"
+            params.append(f"%{experience.strip()}%")
         
     query += " ORDER BY id DESC LIMIT ?"
     params.append(limit)

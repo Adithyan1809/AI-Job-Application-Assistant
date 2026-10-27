@@ -34,6 +34,67 @@ def _slugify(text: str) -> str:
     return re.sub(r"[\s_-]+", "-", text)
 
 
+# Regex patterns matching senior, lead, executive, or management level positions
+SENIOR_TITLE_PATTERNS = [
+    r"\bsenior\b", r"\bsr\.?\b", r"\bsr\s", r"\blead\b", r"\bprincipal\b",
+    r"\bstaff\b", r"\barchitect\b", r"\bdirector\b", r"\bmanager\b",
+    r"\bhead\b", r"\bvp\b", r"\bvice president\b", r"\bexpert\b",
+    r"\bteam lead\b", r"\btech lead\b", r"\b5\+\s*years?\b", r"\b[5-9]\s*years?\b",
+    r"\b1[0-9]\s*years?\b", r"\bmid-senior\b", r"\bexecutive\b"
+]
+
+
+def is_senior_role(title: str, description: str = "") -> bool:
+    """Return True if title or description indicates a senior, lead, or management level position."""
+    t = (title or "").lower()
+    for pat in SENIOR_TITLE_PATTERNS:
+        if re.search(pat, t):
+            return True
+    return False
+
+
+def is_role_match(job_title: str, requested_role: str, description: str = "") -> bool:
+    """Ensure the job title or description has meaningful relevance to the requested role."""
+    if not requested_role or not requested_role.strip():
+        return True
+
+    role_tokens = [t.lower() for t in re.split(r"\W+", requested_role.strip()) if len(t) > 2]
+    if not role_tokens:
+        return True
+
+    title_lower = (job_title or "").lower()
+    desc_lower = (description or "").lower()
+
+    if any(token in title_lower for token in role_tokens):
+        return True
+
+    token_matches = sum(1 for token in role_tokens if token in desc_lower)
+    return token_matches >= max(1, len(role_tokens) - 1)
+
+
+def classify_job_experience(title: str, description: str = "", default_hint: str = "") -> str:
+    """Classify the experience tier based on job title, description, and search hint."""
+    t = (title or "").lower()
+    d = (description or "").lower()
+    combined = f"{t} {d}"
+
+    if is_senior_role(title, description):
+        return "Senior / Lead (5+ years)"
+    if any(k in t for k in ("intern", "internship", "apprentice", "trainee")):
+        return "Internship"
+    if any(k in combined for k in ("fresher", "entry level", "entry-level", "graduate trainee", "campus", "junior", "jr.", "jr ", "associate", "0-1 year", "0-2 year", "0 to 1", "0 to 2")):
+        return "Fresher"
+    if any(k in combined for k in ("1-2 year", "1 to 2 year", "1-3 year", "2+ year")):
+        return "1-2 years"
+    if "intern" in (default_hint or "").lower():
+        return "Internship"
+    if "fresher" in (default_hint or "").lower() or "0-1" in (default_hint or "").lower():
+        return "Fresher"
+    if "1-2" in (default_hint or "").lower():
+        return "1-2 years"
+    return "Fresher"
+
+
 async def scrape_linkedin(
     client: PlaywrightMCPClient,
     role: str,
@@ -75,9 +136,16 @@ async def scrape_linkedin(
 
     raw_eval = await client.evaluate(js_extract)
     raw_jobs = _parse_mcp_evaluate_result(raw_eval, "LinkedIn Jobs")
+    exp_clean = (experience or "").lower().strip()
+    is_fresher_mode = exp_clean in ("fresher", "internship", "0-1 years", "1-2 years", "entry level")
+
+    final_jobs = []
     for j in raw_jobs:
-        j.experience = "Fresher / Entry-Level" if not j.experience or j.experience == "Not Specified" else j.experience
-    return raw_jobs
+        if is_fresher_mode and is_senior_role(j.title, j.description):
+            continue
+        j.experience = classify_job_experience(j.title, j.description, experience)
+        final_jobs.append(j)
+    return final_jobs
 
 
 async def scrape_internshala(
@@ -218,11 +286,19 @@ def scrape_linkedin_direct(role: str, location: str, experience: str = "") -> Li
                     if date_el and date_el.get_text(strip=True):
                         desc += f" (Posted {date_el.get_text(strip=True)})."
                     desc += " Live listing verified on LinkedIn Jobs."
+
+                    exp_clean = (experience or "").lower().strip()
+                    is_fresher_mode = exp_clean in ("fresher", "internship", "0-1 years", "1-2 years", "entry level")
+                    if is_fresher_mode and is_senior_role(title, desc):
+                        continue
+
+                    exp_tag = classify_job_experience(title, desc, experience)
+
                     jobs.append(JobListing(
                         title=title,
                         company=company,
                         location=loc,
-                        experience=experience or "Fresher / Entry-Level",
+                        experience=exp_tag,
                         salary=sal,
                         description=desc,
                         url=raw_link,
@@ -518,16 +594,40 @@ def _filter_jobs(
     location: str = "",
     experience: str = ""
 ) -> List[JobListing]:
-    """Deduplicate listings and apply optional search filters."""
+    """Deduplicate listings and apply strict role relevance and experience filtering."""
     seen = set()
     filtered: List[JobListing] = []
 
+    exp_clean = (experience or "").lower().strip()
+    is_fresher_mode = exp_clean in ("fresher", "internship", "0-1 years", "1-2 years", "entry level")
+    is_internship_only = exp_clean == "internship"
+
     for j in jobs:
-        # Deduplication key by title and company
+        # 1. Deduplication key by title and company
         key = (j.title.lower().strip(), j.company.lower().strip())
         if key in seen:
             continue
         seen.add(key)
+
+        # 2. Strict Senior / Lead exclusion when user requested Fresher / Entry-level / 0-1 / 1-2 years
+        if is_fresher_mode and is_senior_role(j.title, j.description):
+            continue
+
+        # 3. If user explicitly requested Internship, only include internship/trainee roles
+        if is_internship_only:
+            title_lower = j.title.lower()
+            if not any(k in title_lower or k in j.experience.lower() or k in j.description.lower() for k in ("intern", "internship", "trainee", "apprentice", "stipend")):
+                continue
+
+        # 4. Filter by role relevance if role query is provided
+        if role and not is_role_match(j.title, role, j.description):
+            continue
+
+        # 5. Correctly assign experience tag if it's currently unclassified or inaccurate
+        if is_fresher_mode:
+            if not j.experience or j.experience in ("Not Specified", "Not Disclosed") or "senior" in j.experience.lower():
+                j.experience = "Fresher" if not is_internship_only else "Internship"
+
         filtered.append(j)
 
     return filtered

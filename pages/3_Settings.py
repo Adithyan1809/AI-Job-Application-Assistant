@@ -208,34 +208,34 @@ with tab_arch:
     k1, k2, k3, k4 = st.columns(4)
     with k1:
         st.markdown("""
-        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; text-align: center;">
+        <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 14px; text-align: center;">
             <span style="font-size: 1.8rem;">🔌</span>
-            <h5 style="margin: 8px 0 4px 0; font-size: 0.95rem;">Stdio Transport</h5>
-            <p style="color: #64748b; font-size: 0.78rem; margin: 0;">Direct bi-directional pipe communication</p>
+            <h5 style="color: #f1f5f9; margin: 8px 0 4px 0; font-size: 0.95rem; font-weight: 700;">Stdio Transport</h5>
+            <p style="color: #94a3b8; font-size: 0.78rem; margin: 0;">Direct bi-directional pipe communication</p>
         </div>
         """, unsafe_allow_html=True)
     with k2:
         st.markdown("""
-        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; text-align: center;">
+        <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 14px; text-align: center;">
             <span style="font-size: 1.8rem;">🌐</span>
-            <h5 style="margin: 8px 0 4px 0; font-size: 0.95rem;">Cross-Language</h5>
-            <p style="color: #64748b; font-size: 0.78rem; margin: 0;">Python MCP Client controls Node.js MCP server</p>
+            <h5 style="color: #f1f5f9; margin: 8px 0 4px 0; font-size: 0.95rem; font-weight: 700;">Cross-Language</h5>
+            <p style="color: #94a3b8; font-size: 0.78rem; margin: 0;">Python MCP Client controls Node.js MCP server</p>
         </div>
         """, unsafe_allow_html=True)
     with k3:
         st.markdown("""
-        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; text-align: center;">
+        <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 14px; text-align: center;">
             <span style="font-size: 1.8rem;">🤖</span>
-            <h5 style="margin: 8px 0 4px 0; font-size: 0.95rem;">Agent-Native</h5>
-            <p style="color: #64748b; font-size: 0.78rem; margin: 0;">Standardized schemas for LLM tool invocation</p>
+            <h5 style="color: #f1f5f9; margin: 8px 0 4px 0; font-size: 0.95rem; font-weight: 700;">Agent-Native</h5>
+            <p style="color: #94a3b8; font-size: 0.78rem; margin: 0;">Standardized schemas for LLM tool invocation</p>
         </div>
         """, unsafe_allow_html=True)
     with k4:
         st.markdown("""
-        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; text-align: center;">
+        <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 14px; text-align: center;">
             <span style="font-size: 1.8rem;">🛡️</span>
-            <h5 style="margin: 8px 0 4px 0; font-size: 0.95rem;">Zero Driver Setup</h5>
-            <p style="color: #64748b; font-size: 0.78rem; margin: 0;">No manual ChromeDriver downloads needed</p>
+            <h5 style="color: #f1f5f9; margin: 8px 0 4px 0; font-size: 0.95rem; font-weight: 700;">Zero Driver Setup</h5>
+            <p style="color: #94a3b8; font-size: 0.78rem; margin: 0;">No manual ChromeDriver downloads needed</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -247,71 +247,71 @@ with tab_arch:
 
     # Tier 1
     st.markdown("""
-    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-left: 6px solid #2563eb; border-radius: 10px; padding: 16px 20px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-left: 6px solid #38bdf8; border-radius: 10px; padding: 16px 20px; margin-bottom: 12px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <span style="font-weight: 700; color: #1e40af; font-size: 1rem;">🖥️ Tier 1: Interactive Presentation Layer</span>
-            <span style="background: #eff6ff; color: #1d4ed8; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">Streamlit Web UI</span>
+            <span style="font-weight: 700; color: #38bdf8; font-size: 1rem;">🖥️ Tier 1: Interactive Presentation Layer</span>
+            <span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">Streamlit Web UI</span>
         </div>
-        <p style="color: #475569; font-size: 0.88rem; margin: 0 0 6px 0;">
+        <p style="color: #cbd5e1; font-size: 0.88rem; margin: 0 0 6px 0;">
             Accepts search queries (Job Role, Location, Experience Level). Renders discovered opportunities as cards, displays source badges (LinkedIn / Naukri / Internshala), and handles the Application Tracker pipeline.
         </p>
-        <span style="font-size: 0.78rem; color: #64748b;"><strong>Components:</strong> <code>app.py</code>, <code>pages/1_Saved_Jobs.py</code>, <code>pages/2_Application_Tracker.py</code></span>
+        <span style="font-size: 0.78rem; color: #94a3b8;"><strong>Components:</strong> <code>app.py</code>, <code>pages/1_Saved_Jobs.py</code>, <code>pages/2_Application_Tracker.py</code></span>
     </div>
     """, unsafe_allow_html=True)
 
     # Tier 2
     st.markdown("""
-    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-left: 6px solid #059669; border-radius: 10px; padding: 16px 20px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-left: 6px solid #34d399; border-radius: 10px; padding: 16px 20px; margin-bottom: 12px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <span style="font-weight: 700; color: #065f46; font-size: 1rem;">🐍 Tier 2: Business Logic & Orchestration Layer</span>
-            <span style="background: #ecfdf5; color: #047857; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">Python 3.10+ Backend</span>
+            <span style="font-weight: 700; color: #34d399; font-size: 1rem;">🐍 Tier 2: Business Logic & Orchestration Layer</span>
+            <span style="background: rgba(52, 211, 153, 0.15); color: #34d399; padding: 2px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">Python 3.10+ Backend</span>
         </div>
-        <p style="color: #475569; font-size: 0.88rem; margin: 0 0 6px 0;">
+        <p style="color: #cbd5e1; font-size: 0.88rem; margin: 0 0 6px 0;">
             Orchestrates public job discovery, manages SQLite database storage with strict deduplication, and coordinates Gemini LLM calls for technical skill extraction and fresher interview preparation guides.
         </p>
-        <span style="font-size: 0.78rem; color: #64748b;"><strong>Components:</strong> <code>services/job_search.py</code>, <code>services/ai_service.py</code>, <code>database.py</code>, <code>models.py</code></span>
+        <span style="font-size: 0.78rem; color: #94a3b8;"><strong>Components:</strong> <code>services/job_search.py</code>, <code>services/ai_service.py</code>, <code>database.py</code>, <code>models.py</code></span>
     </div>
     """, unsafe_allow_html=True)
 
     # Tier 3
     st.markdown("""
-    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-left: 6px solid #7c3aed; border-radius: 10px; padding: 16px 20px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-left: 6px solid #a78bfa; border-radius: 10px; padding: 16px 20px; margin-bottom: 12px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <span style="font-weight: 700; color: #5b21b6; font-size: 1rem;">⚡ Tier 3: Model Context Protocol (MCP) Client</span>
-            <span style="background: #f5f3ff; color: #6d28d9; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">Official Python MCP SDK</span>
+            <span style="font-weight: 700; color: #a78bfa; font-size: 1rem;">⚡ Tier 3: Model Context Protocol (MCP) Client</span>
+            <span style="background: rgba(167, 139, 250, 0.15); color: #a78bfa; padding: 2px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">Official Python MCP SDK</span>
         </div>
-        <p style="color: #475569; font-size: 0.88rem; margin: 0 0 6px 0;">
+        <p style="color: #cbd5e1; font-size: 0.88rem; margin: 0 0 6px 0;">
             Establishes stdio stream pipes to the external server subprocess. Discovers available tools via <code>session.list_tools()</code> and translates high-level browser actions into standardized JSON-RPC 2.0 messages.
         </p>
-        <span style="font-size: 0.78rem; color: #64748b;"><strong>Components:</strong> <code>mcp.client.session.ClientSession</code>, <code>mcp.client.stdio.stdio_client</code>, <code>services/mcp_client.py</code></span>
+        <span style="font-size: 0.78rem; color: #94a3b8;"><strong>Components:</strong> <code>mcp.client.session.ClientSession</code>, <code>mcp.client.stdio.stdio_client</code>, <code>services/mcp_client.py</code></span>
     </div>
     """, unsafe_allow_html=True)
 
     # Tier 4
     st.markdown("""
-    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-left: 6px solid #d97706; border-radius: 10px; padding: 16px 20px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-left: 6px solid #fbbf24; border-radius: 10px; padding: 16px 20px; margin-bottom: 12px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <span style="font-weight: 700; color: #92400e; font-size: 1rem;">🤖 Tier 4: Official Playwright MCP Server</span>
-            <span style="background: #fffbeb; color: #b45309; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">Node.js / @playwright/mcp</span>
+            <span style="font-weight: 700; color: #fbbf24; font-size: 1rem;">🤖 Tier 4: Official Playwright MCP Server</span>
+            <span style="background: rgba(251, 191, 36, 0.15); color: #fbbf24; padding: 2px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">Node.js / @playwright/mcp</span>
         </div>
-        <p style="color: #475569; font-size: 0.88rem; margin: 0 0 6px 0;">
+        <p style="color: #cbd5e1; font-size: 0.88rem; margin: 0 0 6px 0;">
             The official Microsoft Playwright tool server running in headless mode. Implements 25+ browser manipulation tools and interfaces with Chromium via the Chrome DevTools Protocol (CDP).
         </p>
-        <span style="font-size: 0.78rem; color: #64748b;"><strong>Key Tools:</strong> <code>browser_navigate</code>, <code>browser_wait_for</code>, <code>browser_evaluate</code>, <code>browser_snapshot</code>, <code>browser_click</code></span>
+        <span style="font-size: 0.78rem; color: #94a3b8;"><strong>Key Tools:</strong> <code>browser_navigate</code>, <code>browser_wait_for</code>, <code>browser_evaluate</code>, <code>browser_snapshot</code>, <code>browser_click</code></span>
     </div>
     """, unsafe_allow_html=True)
 
     # Tier 5
     st.markdown("""
-    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-left: 6px solid #dc2626; border-radius: 10px; padding: 16px 20px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-left: 6px solid #f87171; border-radius: 10px; padding: 16px 20px; margin-bottom: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <span style="font-weight: 700; color: #991b1b; font-size: 1rem;">🌐 Tier 5: Headless Browser & Live Web Targets</span>
-            <span style="background: #fef2f2; color: #b91c1c; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">Chromium Engine</span>
+            <span style="font-weight: 700; color: #f87171; font-size: 1rem;">🌐 Tier 5: Headless Browser & Live Web Targets</span>
+            <span style="background: rgba(248, 113, 113, 0.15); color: #f87171; padding: 2px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">Chromium Engine</span>
         </div>
-        <p style="color: #475569; font-size: 0.88rem; margin: 0 0 6px 0;">
+        <p style="color: #cbd5e1; font-size: 0.88rem; margin: 0 0 6px 0;">
             Full rendering engine executing JavaScript and styles across public job boards (LinkedIn, Naukri, Internshala). Uses desktop user-agent headers to guarantee clean, unblocked public listing retrieval.
         </p>
-        <span style="font-size: 0.78rem; color: #64748b;"><strong>Target Portals:</strong> <code>linkedin.com/jobs</code>, <code>naukri.com</code>, <code>internshala.com</code></span>
+        <span style="font-size: 0.78rem; color: #94a3b8;"><strong>Target Portals:</strong> <code>linkedin.com/jobs</code>, <code>naukri.com</code>, <code>internshala.com</code></span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -323,30 +323,30 @@ with tab_arch:
     st1, st2, st3 = st.columns(3)
     with st1:
         st.markdown("""
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; height: 100%;">
-            <div style="background: #dbeafe; color: #1e40af; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-bottom: 8px;">1</div>
-            <h5 style="margin: 0 0 6px 0; color: #0f172a;">Handshake & Discovery</h5>
-            <p style="color: #64748b; font-size: 0.82rem; margin: 0;">
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 16px; height: 100%;">
+            <div style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-bottom: 8px;">1</div>
+            <h5 style="margin: 0 0 6px 0; color: #f1f5f9;">Handshake & Discovery</h5>
+            <p style="color: #94a3b8; font-size: 0.82rem; margin: 0;">
                 Python client connects over <code>stdio</code>. The MCP server returns capability metadata and registers 25 browser automation tools into the session.
             </p>
         </div>
         """, unsafe_allow_html=True)
     with st2:
         st.markdown("""
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; height: 100%;">
-            <div style="background: #dbeafe; color: #1e40af; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-bottom: 8px;">2</div>
-            <h5 style="margin: 0 0 6px 0; color: #0f172a;">Live Navigation & Sync</h5>
-            <p style="color: #64748b; font-size: 0.82rem; margin: 0;">
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 16px; height: 100%;">
+            <div style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-bottom: 8px;">2</div>
+            <h5 style="margin: 0 0 6px 0; color: #f1f5f9;">Live Navigation & Sync</h5>
+            <p style="color: #94a3b8; font-size: 0.82rem; margin: 0;">
                 Client invokes <code>browser_navigate</code> with search URLs, then synchronizes via <code>browser_wait_for</code> ensuring dynamic job listings finish hydration.
             </p>
         </div>
         """, unsafe_allow_html=True)
     with st3:
         st.markdown("""
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; height: 100%;">
-            <div style="background: #dbeafe; color: #1e40af; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-bottom: 8px;">3</div>
-            <h5 style="margin: 0 0 6px 0; color: #0f172a;">Inspection & Ingestion</h5>
-            <p style="color: #64748b; font-size: 0.82rem; margin: 0;">
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 16px; height: 100%;">
+            <div style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-bottom: 8px;">3</div>
+            <h5 style="margin: 0 0 6px 0; color: #f1f5f9;">Inspection & Ingestion</h5>
+            <p style="color: #94a3b8; font-size: 0.82rem; margin: 0;">
                 Invokes <code>browser_evaluate</code> to extract structured cards (title, company, salary, link), deduplicates records, and commits entries to SQLite.
             </p>
         </div>
@@ -397,9 +397,9 @@ with tab_arch:
     comp_col1, comp_col2 = st.columns(2)
     with comp_col1:
         st.markdown("""
-        <div style="background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 10px; padding: 18px; height: 100%;">
-            <h5 style="color: #9f1239; margin: 0 0 10px 0;">❌ Legacy Web Scraping (Requests / Bs4 / Raw Selenium)</h5>
-            <ul style="color: #4c0519; font-size: 0.85rem; padding-left: 20px; line-height: 1.6;">
+        <div style="background: rgba(244, 63, 94, 0.08); border: 1.5px solid rgba(244, 63, 94, 0.25); border-radius: 10px; padding: 18px; height: 100%;">
+            <h5 style="color: #fb7185; margin: 0 0 10px 0;">❌ Legacy Web Scraping (Requests / Bs4 / Raw Selenium)</h5>
+            <ul style="color: #fecdd3; font-size: 0.85rem; padding-left: 20px; line-height: 1.6;">
                 <li><strong>Fragile DOM dependencies:</strong> Easily breaks whenever a website changes a minor CSS class name or DOM tag.</li>
                 <li><strong>No JavaScript rendering:</strong> <code>requests</code> and <code>BeautifulSoup</code> cannot execute client-side React/Vue SPAs.</li>
                 <li><strong>Maintenance burden:</strong> Requires manually downloading and pairing browser driver executables (e.g., <code>chromedriver.exe</code>).</li>
@@ -410,9 +410,9 @@ with tab_arch:
 
     with comp_col2:
         st.markdown("""
-        <div style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 10px; padding: 18px; height: 100%;">
-            <h5 style="color: #14532d; margin: 0 0 10px 0;">✅ Model Context Protocol (MCP) Architecture</h5>
-            <ul style="color: #052e16; font-size: 0.85rem; padding-left: 20px; line-height: 1.6;">
+        <div style="background: rgba(34, 197, 94, 0.08); border: 1.5px solid rgba(34, 197, 94, 0.25); border-radius: 10px; padding: 18px; height: 100%;">
+            <h5 style="color: #4ade80; margin: 0 0 10px 0;">✅ Model Context Protocol (MCP) Architecture</h5>
+            <ul style="color: #bbf7d0; font-size: 0.85rem; padding-left: 20px; line-height: 1.6;">
                 <li><strong>Official Industry Standard:</strong> Backed by major AI ecosystem contributors for secure external tool execution.</li>
                 <li><strong>Full Browser Engine:</strong> Renders complete JavaScript, single-page applications, and responsive layouts.</li>
                 <li><strong>Zero Driver Configuration:</strong> Managed transparently via <code>npx @playwright/mcp@latest</code>.</li>

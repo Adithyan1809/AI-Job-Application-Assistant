@@ -36,34 +36,35 @@ st.markdown("""
     .main-header {
         margin-bottom: 24px;
         padding-bottom: 12px;
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
     .job-card {
-        background-color: #ffffff;
-        border: 1px solid #e2e8f0;
+        background-color: var(--secondary-background-color, #1a1f2c);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 12px;
         padding: 20px;
         margin-bottom: 16px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
         transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
     .job-card:hover {
-        box-shadow: 0 6px 12px rgba(0,0,0,0.06);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        border-color: rgba(96, 165, 250, 0.3);
     }
     .badge {
         display: inline-block;
-        padding: 3px 10px;
+        padding: 4px 12px;
         border-radius: 12px;
         font-size: 0.8rem;
         font-weight: 600;
         margin-right: 6px;
         margin-bottom: 6px;
     }
-    .badge-loc { background-color: #f1f5f9; color: #334155; }
-    .badge-exp { background-color: #eff6ff; color: #1d4ed8; }
-    .badge-sal { background-color: #ecfdf5; color: #047857; }
-    .badge-mcp { background-color: #fdf4ff; color: #86198f; border: 1px solid #f0abfc; }
-    .badge-sample { background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+    .badge-loc { background-color: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.25); }
+    .badge-exp { background-color: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.25); }
+    .badge-sal { background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); }
+    .badge-mcp { background-color: rgba(217, 70, 239, 0.15); color: #f0abfc; border: 1px solid rgba(217, 70, 239, 0.35); }
+    .badge-sample { background-color: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); }
     .stButton>button {
         border-radius: 8px;
     }
@@ -93,7 +94,7 @@ with st.sidebar:
     st.caption("🎓 Designed for college assignments & fresh graduate career exploration.")
 
 # Main dashboard layout
-st.markdown(f"<div class='main-header'><h1>💼 {APP_TITLE}</h1><p style='color: #64748b; font-size: 1.1rem;'>{APP_SUBTITLE}</p></div>", unsafe_allow_html=True)
+st.markdown(f"<div class='main-header'><h1>💼 {APP_TITLE}</h1><p style='color: #94a3b8; font-size: 1.1rem;'>{APP_SUBTITLE}</p></div>", unsafe_allow_html=True)
 
 # Search Form Container
 with st.container():
@@ -123,7 +124,7 @@ with st.container():
 
         # Informative notice card (replacing the dropdown with an automatic multi-portal crawler indicator)
         st.markdown("""
-        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 0.9rem; color: #334155;">
+        <div style="background-color: rgba(37, 99, 235, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); border-left: 4px solid #3b82f6; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 0.9rem; color: #cbd5e1;">
             🌐 <strong>Auto-Scrapes Real Job Portals:</strong> Playwright MCP automatically connects to <strong>LinkedIn Jobs</strong>, <strong>Naukri.com</strong>, and <strong>Internshala</strong> to discover authentic live opportunities.
         </div>
         """, unsafe_allow_html=True)
@@ -253,12 +254,12 @@ if results:
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <span style="font-size: 1.3rem;">{portal['icon']}</span>
                         <div>
-                            <span style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px;">Originating Website</span><br/>
+                            <span style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px;">Originating Website</span><br/>
                             <span style="font-size: 0.95rem; font-weight: 700; color: {portal['color']};">🌐 Link taken from <strong>{portal['full_name']}</strong></span>
                         </div>
                     </div>
                     <div>
-                        <span style="background-color: #ffffff; border: 1px solid {portal['border']}; color: {portal['color']}; font-size: 0.8rem; font-weight: 600; padding: 4px 10px; border-radius: 6px;">
+                        <span style="background-color: rgba(255, 255, 255, 0.08); border: 1px solid {portal['border']}; color: {portal['color']}; font-size: 0.8rem; font-weight: 600; padding: 4px 10px; border-radius: 6px;">
                             ✓ Real Portal
                         </span>
                     </div>
@@ -274,7 +275,7 @@ if results:
                 )
 
                 # Description snippet
-                st.markdown(f"<p style='color: #475569; margin: 10px 0;'>{job.description}</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='color: #cbd5e1; margin: 10px 0; font-size: 0.95rem; line-height: 1.5;'>{job.description}</p>", unsafe_allow_html=True)
                 
                 # Action Buttons Row
                 btn_col1, btn_col2, btn_col3 = st.columns([1, 1.2, 1.5])

@@ -17,9 +17,9 @@ def get_portal_info(url: str = "", source: str = "") -> Dict[str, str]:
             "name": "LinkedIn",
             "full_name": "LinkedIn Jobs",
             "icon": "💼",
-            "color": "#0077b5",
-            "bg": "#f0f7ff",
-            "border": "#0077b5",
+            "color": "#38bdf8",
+            "bg": "rgba(14, 165, 233, 0.12)",
+            "border": "rgba(14, 165, 233, 0.45)",
             "domain": "linkedin.com",
             "tagline": "Professional Network & Live Jobs"
         }
@@ -28,9 +28,9 @@ def get_portal_info(url: str = "", source: str = "") -> Dict[str, str]:
             "name": "Naukri",
             "full_name": "Naukri.com",
             "icon": "💼",
-            "color": "#16a34a",
-            "bg": "#f0fdf4",
-            "border": "#16a34a",
+            "color": "#4ade80",
+            "bg": "rgba(34, 197, 94, 0.12)",
+            "border": "rgba(34, 197, 94, 0.45)",
             "domain": "naukri.com",
             "tagline": "India's Leading Job Portal"
         }
@@ -39,9 +39,9 @@ def get_portal_info(url: str = "", source: str = "") -> Dict[str, str]:
             "name": "Internshala",
             "full_name": "Internshala",
             "icon": "🎓",
-            "color": "#0284c7",
-            "bg": "#f0f9ff",
-            "border": "#0284c7",
+            "color": "#0ea5e9",
+            "bg": "rgba(14, 165, 233, 0.12)",
+            "border": "rgba(14, 165, 233, 0.45)",
             "domain": "internshala.com",
             "tagline": "Fresher Jobs & Internships Platform"
         }
@@ -50,9 +50,9 @@ def get_portal_info(url: str = "", source: str = "") -> Dict[str, str]:
             "name": "Glassdoor",
             "full_name": "Glassdoor",
             "icon": "🏢",
-            "color": "#0caa41",
-            "bg": "#eafaf1",
-            "border": "#0caa41",
+            "color": "#34d399",
+            "bg": "rgba(16, 185, 129, 0.12)",
+            "border": "rgba(16, 185, 129, 0.45)",
             "domain": "glassdoor.com",
             "tagline": "Company Reviews & Jobs"
         }
@@ -61,9 +61,9 @@ def get_portal_info(url: str = "", source: str = "") -> Dict[str, str]:
             "name": "Indeed",
             "full_name": "Indeed",
             "icon": "🔍",
-            "color": "#2557a7",
-            "bg": "#eef2ff",
-            "border": "#2557a7",
+            "color": "#60a5fa",
+            "bg": "rgba(37, 99, 235, 0.12)",
+            "border": "rgba(37, 99, 235, 0.45)",
             "domain": "indeed.com",
             "tagline": "Global Job Search Engine"
         }
@@ -81,9 +81,9 @@ def get_portal_info(url: str = "", source: str = "") -> Dict[str, str]:
             "name": domain,
             "full_name": domain,
             "icon": "🌐",
-            "color": "#475569",
-            "bg": "#f8fafc",
-            "border": "#94a3b8",
+            "color": "#94a3b8",
+            "bg": "rgba(148, 163, 184, 0.12)",
+            "border": "rgba(148, 163, 184, 0.45)",
             "domain": domain_name,
             "tagline": "Live Public Listing"
         }

@@ -56,8 +56,8 @@ else:
             st.markdown("""
             <style>
                 .app-card {
-                    background: #ffffff;
-                    border: 1px solid #e2e8f0;
+                    background: var(--secondary-background-color, #1a1f2c);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
                     border-radius: 10px;
                     padding: 18px;
                     margin-bottom: 14px;
@@ -73,12 +73,12 @@ else:
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <span style="font-size: 1.2rem;">{portal['icon']}</span>
                         <div>
-                            <span style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px;">Job Source</span><br/>
+                            <span style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px;">Job Source</span><br/>
                             <span style="font-size: 0.95rem; font-weight: 700; color: {portal['color']};">🌐 Link taken from <strong>{portal['full_name']}</strong></span>
                         </div>
                     </div>
                     <div>
-                        <span style="background-color: #ffffff; border: 1px solid {portal['border']}; color: {portal['color']}; font-size: 0.8rem; font-weight: 600; padding: 4px 10px; border-radius: 6px;">
+                        <span style="background-color: rgba(255, 255, 255, 0.08); border: 1px solid {portal['border']}; color: {portal['color']}; font-size: 0.8rem; font-weight: 600; padding: 4px 10px; border-radius: 6px;">
                             🔗 {portal['domain']}
                         </span>
                     </div>

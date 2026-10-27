@@ -2,8 +2,10 @@
 
 import os
 import sys
+import shutil
 import base64
 from pathlib import Path
+from typing import Optional
 from dotenv import load_dotenv
 
 # Base paths
@@ -45,9 +47,92 @@ DEFAULT_USER_AGENT = (
     "(KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
 )
 
+def ensure_node_on_path() -> Optional[str]:
+    """
+    Ensure Node.js and npx are accessible in the current process environment.
+    Searches PATH, standard Windows/Unix directories, and Windows Registry.
+    Prepends discovered directory to os.environ['PATH'] so subprocesses can run seamlessly.
+    """
+    cmd = "npx"
+    # 1. Quick check if already found on current PATH
+    if os.name == "nt":
+        found = shutil.which(f"{cmd}.cmd") or shutil.which(f"{cmd}.exe") or shutil.which(cmd)
+    else:
+        found = shutil.which(cmd)
+
+    if found and os.path.isfile(found):
+        parent_dir = os.path.dirname(found)
+        if parent_dir and parent_dir not in os.environ.get("PATH", ""):
+            os.environ["PATH"] = parent_dir + os.pathsep + os.environ.get("PATH", "")
+        return found
+
+    # 2. Check candidate directories
+    candidates = []
+    if os.name == "nt":
+        candidates.extend([
+            r"C:\Program Files\nodejs",
+            r"C:\Program Files (x86)\nodejs",
+            os.path.expandvars(r"%APPDATA%\npm"),
+            os.path.expandvars(r"%LOCALAPPDATA%\Programs\node"),
+            os.path.expandvars(r"%USERPROFILE%\AppData\Roaming\npm"),
+            os.path.expandvars(r"%USERPROFILE%\scoop\shims"),
+            r"C:\ProgramData\chocolatey\bin",
+        ])
+        try:
+            import winreg
+            for root_key, sub_key in [
+                (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment"),
+                (winreg.HKEY_CURRENT_USER, r"Environment"),
+            ]:
+                try:
+                    with winreg.OpenKey(root_key, sub_key) as k:
+                        reg_path, _ = winreg.QueryValueEx(k, "Path")
+                        for part in reg_path.split(";"):
+                            p_strip = part.strip()
+                            if p_strip and ("node" in p_strip.lower() or "npm" in p_strip.lower()):
+                                candidates.append(p_strip)
+                except Exception:
+                    pass
+        except Exception:
+            pass
+    else:
+        candidates.extend([
+            "/usr/local/bin",
+            "/usr/bin",
+            "/opt/homebrew/bin",
+            "/opt/homebrew/opt/node/bin",
+            "/usr/local/opt/node/bin",
+            os.path.expanduser("~/.nvm/versions/node"),
+            os.path.expanduser("~/.fnm/current/bin"),
+            os.path.expanduser("~/.volta/bin"),
+            os.path.expanduser("~/.asdf/shims"),
+        ])
+
+    for dir_path in candidates:
+        if not dir_path or not os.path.exists(dir_path):
+            continue
+        extensions = [".cmd", ".exe", ""] if os.name == "nt" else [""]
+        for ext in extensions:
+            exe_candidate = os.path.join(dir_path, f"{cmd}{ext}")
+            if os.path.isfile(exe_candidate):
+                current_path = os.environ.get("PATH", "")
+                if dir_path not in current_path:
+                    os.environ["PATH"] = dir_path + os.pathsep + current_path
+                return exe_candidate
+    return None
+
+
+# Run auto-discovery on startup to heal PATH immediately
+_discovered_npx = ensure_node_on_path()
+
 # MCP Server configuration
-_default_npx = "npx.cmd" if os.name == "nt" else "npx"
-PLAYWRIGHT_MCP_COMMAND = os.getenv("PLAYWRIGHT_MCP_COMMAND", _default_npx)
+_configured_cmd = os.getenv("PLAYWRIGHT_MCP_COMMAND", "")
+if _configured_cmd and os.path.isfile(_configured_cmd):
+    PLAYWRIGHT_MCP_COMMAND = _configured_cmd
+elif _discovered_npx:
+    PLAYWRIGHT_MCP_COMMAND = _discovered_npx
+else:
+    PLAYWRIGHT_MCP_COMMAND = _configured_cmd or ("npx.cmd" if os.name == "nt" else "npx")
 PLAYWRIGHT_MCP_ARGS = [
     "-y",
     "@playwright/mcp@latest",

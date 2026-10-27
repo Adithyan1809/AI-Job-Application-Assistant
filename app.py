@@ -175,8 +175,16 @@ if search_submitted:
             progress_placeholder.warning(f"⚠️ No open listings found on live portals for '{role}' in '{location}'. Try adjusting keywords or location.")
     except Exception as e:
         progress_bar.empty()
-        progress_placeholder.error(f"❌ Search encountered an error: {e}")
-        st.info("💡 **Tip:** Verify your internet connection. Playwright MCP connects directly to live job portals.")
+        err_msg = str(e)
+        progress_placeholder.error(f"❌ Search encountered an error: {err_msg}")
+        if "node" in err_msg.lower() or "npx" in err_msg.lower():
+            st.warning(
+                "⚠️ **Node.js & npx are required for Playwright MCP browser automation.**\n\n"
+                "- If Node.js was recently installed, please restart your terminal / app so the updated environment PATH is loaded.\n"
+                "- To install Node.js, run in PowerShell: `winget install OpenJS.NodeJS` or download from [nodejs.org](https://nodejs.org)."
+            )
+        else:
+            st.info("💡 **Tip:** Verify your internet connection. Playwright MCP connects directly to live job portals.")
 
 # Display Results Section
 results = st.session_state.search_results

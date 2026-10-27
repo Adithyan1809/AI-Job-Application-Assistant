@@ -8,7 +8,7 @@ from typing import List, Dict, Any, Optional, Tuple
 
 from mcp.client.session import ClientSession
 from mcp.client.stdio import stdio_client, StdioServerParameters
-from config import PLAYWRIGHT_MCP_COMMAND, PLAYWRIGHT_MCP_ARGS, BROWSER_TIMEOUT
+from config import PLAYWRIGHT_MCP_COMMAND, PLAYWRIGHT_MCP_ARGS, BROWSER_TIMEOUT, ensure_node_on_path
 
 
 class MCPConnectionError(Exception):
@@ -41,16 +41,34 @@ class PlaywrightMCPClient:
         self._available_tools: List[str] = []
 
     def _resolve_executable(self) -> str:
-        """Resolve command executable on Windows or POSIX."""
+        """Resolve command executable on Windows or POSIX, auto-healing PATH if needed."""
+        ensure_node_on_path()
         cmd = self.command
+
+        # If cmd is directly a valid file path, return it
+        if os.path.isfile(cmd):
+            return cmd
+
         if os.name == "nt":
             if not cmd.lower().endswith((".cmd", ".exe", ".bat")):
-                # Check for cmd variant first (common for npm/npx)
+                # Check for cmd variant first (common for npm/npx on Windows)
                 cmd_with_ext = shutil.which(f"{cmd}.cmd")
                 if cmd_with_ext:
                     return cmd_with_ext
+                cmd_with_exe = shutil.which(f"{cmd}.exe")
+                if cmd_with_exe:
+                    return cmd_with_exe
+
         resolved = shutil.which(cmd)
-        return resolved if resolved else cmd
+        if resolved:
+            return resolved
+
+        # Fallback check using discovered npx
+        auto_npx = ensure_node_on_path()
+        if auto_npx and cmd in ("npx", "npx.cmd"):
+            return auto_npx
+
+        return cmd
 
     async def __aenter__(self) -> "PlaywrightMCPClient":
         await self.connect()
@@ -64,15 +82,19 @@ class PlaywrightMCPClient:
         executable = self._resolve_executable()
         
         # Verify npx / node executable
-        if not shutil.which(executable) and not shutil.which(self.command):
+        if not os.path.isfile(executable) and not shutil.which(executable) and not shutil.which(self.command):
             raise MCPConnectionError(
                 f"Could not find executable '{self.command}' or '{executable}' on system PATH. "
-                "Please verify that Node.js and npm are installed."
+                "Please verify that Node.js and npm are installed (visit https://nodejs.org or run 'winget install OpenJS.NodeJS')."
             )
 
         env = dict(os.environ)
         # Ensure utf-8 encoding for stdio
         env["PYTHONIOENCODING"] = "utf-8"
+        # Ensure parent directory of executable is in env['PATH']
+        exe_dir = os.path.dirname(executable)
+        if exe_dir and exe_dir not in env.get("PATH", ""):
+            env["PATH"] = exe_dir + os.pathsep + env.get("PATH", "")
 
         server_params = StdioServerParameters(
             command=executable,

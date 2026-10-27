@@ -46,9 +46,11 @@ SENIOR_TITLE_PATTERNS = [
 # Regex patterns that detect required experience years in the description/title text
 _EXP_YEARS_RE = re.compile(
     r"(?:"
-    r"(\d+)\s*[-–]\s*(\d+)\s*(?:years?|yrs?)"  # range: "5-8 years", "3-5 yrs"
-    r"|(\d+)\s*\+\s*(?:years?|yrs?)"            # plus: "5+ years"
-    r"|(\d+)\s*(?:years?|yrs?)\s*(?:of\s+)?experience"  # explicit: "5 years experience"
+    r"(\d+)\s*[-–to]+\s*(\d+)\s*(?:years?|yrs?\.?)"   # range: "5-8 years", "7 to 11 yrs.", "3–5 yrs"
+    r"|(\d+)\s*\+\s*(?:years?|yrs?\.?)"                 # plus: "5+ years", "5+ yrs"
+    r"|(\d+)\s*(?:years?|yrs?\.?)\s*(?:of\s+)?experience"  # explicit: "5 years experience", "5 yrs experience"
+    r"|exp(?:erience)?\.?\s*:?\s*(\d+)\s*[-–to]+\s*(\d+)\s*(?:years?|yrs?\.?)"  # "Exp: 7 to 11 yrs", "Experience: 5-8 yrs"
+    r"|exp(?:erience)?\.?\s*:?\s*(\d+)\+?\s*(?:years?|yrs?\.?)"                  # "Exp: 7 yrs", "Exp: 5+ yrs"
     r")",
     re.IGNORECASE
 )
@@ -61,18 +63,25 @@ def _extract_required_years(text: str) -> Optional[int]:
     """
     Parse experience year requirements from job description/title.
     Returns the MINIMUM required years mentioned, or None if not found.
-    E.g. '5-8 years' -> 5,  '3+ years' -> 3,  '2 years experience' -> 2
+    Handles formats:
+      '5-8 years', '7 to 11 yrs.', '3+ years', '5 years experience',
+      'Exp: 7 to 11 yrs.', 'Experience: 5-8 yrs', 'Exp : 5 yrs'
     """
     if not text:
         return None
     found_mins = []
     for m in _EXP_YEARS_RE.finditer(text):
-        if m.group(1) and m.group(2):          # range pattern
-            found_mins.append(int(m.group(1)))
-        elif m.group(3):                        # plus pattern
-            found_mins.append(int(m.group(3)))
-        elif m.group(4):                        # explicit pattern
-            found_mins.append(int(m.group(4)))
+        g = m.groups()
+        if g[0] and g[1]:      # range: "5-8 years" / "7 to 11 yrs"
+            found_mins.append(int(g[0]))
+        elif g[2]:              # plus: "5+ years"
+            found_mins.append(int(g[2]))
+        elif g[3]:              # explicit: "5 years experience"
+            found_mins.append(int(g[3]))
+        elif g[4] and g[5]:    # "Exp: 7 to 11 yrs"
+            found_mins.append(int(g[4]))
+        elif g[6]:              # "Exp: 7 yrs"
+            found_mins.append(int(g[6]))
     return min(found_mins) if found_mins else None
 
 

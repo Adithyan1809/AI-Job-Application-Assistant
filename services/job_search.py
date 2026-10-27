@@ -34,22 +34,65 @@ def _slugify(text: str) -> str:
     return re.sub(r"[\s_-]+", "-", text)
 
 
-# Regex patterns matching senior, lead, executive, or management level positions
+# Regex patterns matching senior, lead, executive, or management level positions (in title)
 SENIOR_TITLE_PATTERNS = [
     r"\bsenior\b", r"\bsr\.?\b", r"\bsr\s", r"\blead\b", r"\bprincipal\b",
     r"\bstaff\b", r"\barchitect\b", r"\bdirector\b", r"\bmanager\b",
     r"\bhead\b", r"\bvp\b", r"\bvice president\b", r"\bexpert\b",
-    r"\bteam lead\b", r"\btech lead\b", r"\b5\+\s*years?\b", r"\b[5-9]\s*years?\b",
-    r"\b1[0-9]\s*years?\b", r"\bmid-senior\b", r"\bexecutive\b"
+    r"\bteam lead\b", r"\btech lead\b", r"\bmid-senior\b", r"\bexecutive\b",
+    r"\bl[3-9]\b", r"\blevel\s*[3-9]\b",   # Level 3+ designation patterns (L4, L5, etc.)
 ]
+
+# Regex patterns that detect required experience years in the description/title text
+_EXP_YEARS_RE = re.compile(
+    r"(?:"
+    r"(\d+)\s*[-–]\s*(\d+)\s*(?:years?|yrs?)"  # range: "5-8 years", "3-5 yrs"
+    r"|(\d+)\s*\+\s*(?:years?|yrs?)"            # plus: "5+ years"
+    r"|(\d+)\s*(?:years?|yrs?)\s*(?:of\s+)?experience"  # explicit: "5 years experience"
+    r")",
+    re.IGNORECASE
+)
+
+# Fresher mode: max experience years we'll tolerate
+_FRESHER_MAX_YEARS = 2
+
+
+def _extract_required_years(text: str) -> Optional[int]:
+    """
+    Parse experience year requirements from job description/title.
+    Returns the MINIMUM required years mentioned, or None if not found.
+    E.g. '5-8 years' -> 5,  '3+ years' -> 3,  '2 years experience' -> 2
+    """
+    if not text:
+        return None
+    found_mins = []
+    for m in _EXP_YEARS_RE.finditer(text):
+        if m.group(1) and m.group(2):          # range pattern
+            found_mins.append(int(m.group(1)))
+        elif m.group(3):                        # plus pattern
+            found_mins.append(int(m.group(3)))
+        elif m.group(4):                        # explicit pattern
+            found_mins.append(int(m.group(4)))
+    return min(found_mins) if found_mins else None
 
 
 def is_senior_role(title: str, description: str = "") -> bool:
-    """Return True if title or description indicates a senior, lead, or management level position."""
+    """
+    Return True if the role is too senior for a fresher.
+    Checks: title keyword patterns AND numeric experience requirements in description.
+    """
     t = (title or "").lower()
+
+    # 1. Check title-level patterns
     for pat in SENIOR_TITLE_PATTERNS:
         if re.search(pat, t):
             return True
+
+    # 2. Check numeric experience requirements in the full description text
+    min_yrs = _extract_required_years(description)
+    if min_yrs is not None and min_yrs > _FRESHER_MAX_YEARS:
+        return True
+
     return False
 
 
@@ -82,9 +125,9 @@ def classify_job_experience(title: str, description: str = "", default_hint: str
         return "Senior / Lead (5+ years)"
     if any(k in t for k in ("intern", "internship", "apprentice", "trainee")):
         return "Internship"
-    if any(k in combined for k in ("fresher", "entry level", "entry-level", "graduate trainee", "campus", "junior", "jr.", "jr ", "associate", "0-1 year", "0-2 year", "0 to 1", "0 to 2")):
+    if any(k in combined for k in ("fresher", "entry level", "entry-level", "graduate trainee", "campus", "junior", "jr.", "jr ", "associate", "0-1 year", "0-2 year", "0 to 1", "0 to 2", "seniority level: entry level", "entry level associate")):
         return "Fresher"
-    if any(k in combined for k in ("1-2 year", "1 to 2 year", "1-3 year", "2+ year")):
+    if any(k in combined for k in ("1-2 year", "1 to 2 year", "1-3 year", "2+ year", "2-3 year")):
         return "1-2 years"
     if "intern" in (default_hint or "").lower():
         return "Internship"
@@ -122,13 +165,18 @@ async def scrape_linkedin(
             const salElem = c.querySelector('.job-search-card__salary-info');
             const dateElem = c.querySelector('time');
             const linkElem = c.querySelector('a.base-card__full-link, a');
+            // Capture seniority/metadata label (e.g. 'Mid-Senior level', 'Entry level', 'Internship')
+            const metaElem = c.querySelector('.job-search-card__listdate, .job-posting-card__job-insight, [class*="seniority"], [class*="level"]');
+            const metaTxt = metaElem ? metaElem.innerText.trim() : '';
+            const titleTxt = titleElem ? titleElem.innerText.trim() : '';
+            const dateTxt = dateElem ? ' (Posted ' + dateElem.innerText.trim() + ')' : '';
 
             return {
-                title: titleElem ? titleElem.innerText.trim() : '',
+                title: titleTxt,
                 company: compElem ? compElem.innerText.trim() : 'Company on LinkedIn',
                 location: locElem ? locElem.innerText.trim() : '',
-                salary: salElem ? salElem.innerText.trim() : 'Not Specified',
-                description: (titleElem ? titleElem.innerText.trim() : '') + (dateElem ? ' (Posted ' + dateElem.innerText.trim() + ')' : '') + ' - Live listing on LinkedIn Jobs.',
+                salary: salElem ? salElem.innerText.trim() : 'Not Disclosed',
+                description: titleTxt + dateTxt + (metaTxt ? ' [' + metaTxt + ']' : '') + ' - Live listing on LinkedIn Jobs.',
                 url: linkElem ? linkElem.href.split('?')[0] : 'https://www.linkedin.com/jobs/'
             };
         }).filter(x => x.title && x.title.length > 2);
@@ -249,13 +297,47 @@ async def scrape_naukri(
     return _parse_mcp_evaluate_result(raw_eval, "Naukri.com")
 
 
+def _fetch_linkedin_job_detail(job_url: str, headers: Dict[str, str]) -> str:
+    """
+    Fetch a LinkedIn public job detail page and return the visible text
+    (title, criteria section). Used to extract experience requirements.
+    Returns empty string on failure.
+    """
+    try:
+        # LinkedIn public job view URL (no login required for some listings)
+        req = urllib.request.Request(job_url, headers=headers)
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            html = resp.read().decode("utf-8", errors="ignore")
+            soup = BeautifulSoup(html, "html.parser")
+            # Grab criteria sections: "Seniority level", "Employment type", "Job function"
+            criteria = soup.select(".description__job-criteria-item, .job-criteria__item")
+            texts = []
+            for item in criteria:
+                header = item.select_one("h3, .description__job-criteria-subheader")
+                value = item.select_one("span, .description__job-criteria-text")
+                if header and value:
+                    texts.append(f"{header.get_text(strip=True)}: {value.get_text(strip=True)}")
+            # Also grab description body for year mentions
+            desc_el = soup.select_one(".description__text, .show-more-less-html__markup")
+            if desc_el:
+                texts.append(desc_el.get_text(separator=" ", strip=True)[:600])
+            return " | ".join(texts)
+    except Exception:
+        return ""
+
+
 def scrape_linkedin_direct(role: str, location: str, experience: str = "") -> List[JobListing]:
     """Scrape real public job listings directly from LinkedIn Jobs guest endpoint."""
     role_q = urllib.parse.quote(role.strip())
     loc_q = urllib.parse.quote(location.strip())
     url = f"https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords={role_q}&location={loc_q}&start=0"
-    if experience and ("fresher" in experience.lower() or "0-1" in experience.lower() or "intern" in experience.lower()):
-        url += "&f_E=1,2"
+
+    exp_clean = (experience or "").lower().strip()
+    is_fresher_mode = exp_clean in ("fresher", "internship", "0-1 years", "1-2 years", "entry level")
+
+    # Apply LinkedIn experience-level filter for fresher/internship mode
+    if is_fresher_mode:
+        url += "&f_E=1,2"  # 1=Internship, 2=Entry level only
 
     headers = {
         "User-Agent": DEFAULT_USER_AGENT,
@@ -282,13 +364,19 @@ def scrape_linkedin_direct(role: str, location: str, experience: str = "") -> Li
                     loc = loc_el.get_text(strip=True) if loc_el else location
                     sal = sal_el.get_text(strip=True) if sal_el else "Not Disclosed"
                     raw_link = link_el["href"].split("?")[0] if (link_el and link_el.has_attr("href")) else f"https://www.linkedin.com/jobs/search?keywords={role_q}&location={loc_q}"
+
+                    # Build description with listing-level metadata
                     desc = f"{title} at {company} in {loc}."
                     if date_el and date_el.get_text(strip=True):
                         desc += f" (Posted {date_el.get_text(strip=True)})."
                     desc += " Live listing verified on LinkedIn Jobs."
 
-                    exp_clean = (experience or "").lower().strip()
-                    is_fresher_mode = exp_clean in ("fresher", "internship", "0-1 years", "1-2 years", "entry level")
+                    # Enrich with detail-page criteria (Seniority level, years) to power filtering
+                    detail_text = _fetch_linkedin_job_detail(raw_link, headers)
+                    if detail_text:
+                        desc += f" | {detail_text}"
+
+                    # Strict senior exclusion — now catches "5-8 Years" in description too
                     if is_fresher_mode and is_senior_role(title, desc):
                         continue
 

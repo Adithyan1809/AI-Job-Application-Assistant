@@ -26,6 +26,14 @@ import demo_server
 
 init_db()
 
+def render_html(html_code: str, container=st):
+    """Safely render raw HTML directly via st.html without Markdown parser interference."""
+    clean = "\n".join(line.strip() for line in html_code.strip().splitlines() if line.strip())
+    if hasattr(container, "html"):
+        container.html(clean)
+    else:
+        container.markdown(clean, unsafe_allow_html=True)
+
 st.set_page_config(
     page_title=f"Settings & Diagnostics - {APP_TITLE}",
     page_icon="⚙️",
@@ -186,33 +194,27 @@ with tab_arch:
     st.markdown("### 📐 How Model Context Protocol (MCP) Works in This Application")
 
     # ── HERO BANNER ──────────────────────────────────────────────────────────────
-    st.markdown("""
+    render_html("""
     <div style="
         background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
         border: 1px solid rgba(139,92,246,0.35);
         border-radius: 16px;
-        padding: 28px 32px;
-        margin-bottom: 28px;
+        padding: 26px 30px;
+        margin-bottom: 24px;
         position: relative;
         overflow: hidden;
     ">
-        <div style="position: absolute; top: -40px; right: -40px; width: 180px; height: 180px;
-                    background: radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%);
-                    border-radius: 50%;"></div>
-        <div style="position: absolute; bottom: -30px; left: 20px; width: 120px; height: 120px;
-                    background: radial-gradient(circle, rgba(56,189,248,0.12) 0%, transparent 70%);
-                    border-radius: 50%;"></div>
-        <div style="display: flex; align-items: flex-start; gap: 20px; flex-wrap: wrap; position: relative; z-index: 1;">
-            <div style="font-size: 3rem; line-height: 1;">⚡</div>
+        <div style="display: flex; align-items: flex-start; gap: 18px; flex-wrap: wrap;">
+            <div style="font-size: 2.8rem; line-height: 1;">⚡</div>
             <div style="flex: 1; min-width: 280px;">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap;">
-                    <h3 style="color: #a5b4fc; margin: 0; font-size: 1.4rem; font-weight: 800;">Official Playwright MCP Architecture</h3>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap;">
+                    <h3 style="color: #a5b4fc; margin: 0; font-size: 1.35rem; font-weight: 800;">Official Playwright MCP Architecture</h3>
                     <span style="background: rgba(99,102,241,0.3); border: 1px solid #6366f1; color: #c7d2fe;
-                                 padding: 3px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; white-space: nowrap;">
+                                 padding: 3px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 700;">
                         JSON-RPC 2.0 · stdio
                     </span>
                 </div>
-                <p style="color: #94a3b8; margin: 0; font-size: 0.9rem; line-height: 1.65; max-width: 720px;">
+                <p style="color: #94a3b8; margin: 0; font-size: 0.88rem; line-height: 1.6; max-width: 720px;">
                     <strong style="color: #c7d2fe;">Model Context Protocol (MCP)</strong> is an open, vendor-neutral standard that enables
                     AI models and Python applications to safely control external browsers and enterprise tools via
                     standardized <code style="background:rgba(255,255,255,0.1); padding:1px 5px; border-radius:4px;">stdio</code> pipes —
@@ -220,18 +222,18 @@ with tab_arch:
                 </p>
             </div>
         </div>
-        <div style="display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; position: relative; z-index: 1;">
+        <div style="display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap;">
             <span style="background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.4); color: #7dd3fc;
                          padding: 4px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">🔌 Stdio Transport</span>
             <span style="background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.4); color: #c4b5fd;
-                         padding: 4px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">🐍 Python &harr; Node.js</span>
+                         padding: 4px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">🐍 Python &#x2194; Node.js</span>
             <span style="background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.4); color: #6ee7b7;
                          padding: 4px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">🤖 Agent-Native</span>
             <span style="background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.4); color: #fde68a;
                          padding: 4px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">🛡️ Zero Driver Setup</span>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # ── 4 STAT CARDS ─────────────────────────────────────────────────────────────
     s1, s2, s3, s4 = st.columns(4)
@@ -242,107 +244,92 @@ with tab_arch:
         ("100%","Real Data",     "No mock / synthetic listings",      "#fbbf24"),
     ]
     for col, (val, label, sub, color) in zip([s1, s2, s3, s4], stat_cards):
-        col.markdown(f"""
+        render_html(f"""
         <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.09);
                     border-top: 3px solid {color}; border-radius: 12px; padding: 18px 16px; text-align: center;">
             <div style="font-size: 2rem; font-weight: 800; color: {color}; line-height: 1;">{val}</div>
             <div style="font-size: 0.9rem; font-weight: 700; color: #f1f5f9; margin: 6px 0 3px 0;">{label}</div>
             <div style="font-size: 0.74rem; color: #64748b;">{sub}</div>
         </div>
-        """, unsafe_allow_html=True)
+        """, container=col)
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.write("")
 
     # ── DATA FLOW DIAGRAM ─────────────────────────────────────────────────────────
     st.markdown("#### 🔀 Live Data Flow")
-    st.markdown("""
-    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07);
-                border-radius: 14px; padding: 24px 20px; margin-bottom: 24px; overflow-x: auto;">
-        <div style="display: flex; align-items: center; justify-content: center;
-                    gap: 0; min-width: 640px; flex-wrap: nowrap;">
-
-            <!-- Node: User -->
-            <div style="display: flex; flex-direction: column; align-items: center; min-width: 100px;">
+    render_html("""
+    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08);
+                border-radius: 14px; padding: 22px 18px; margin-bottom: 24px; overflow-x: auto;">
+        <div style="display: flex; align-items: center; justify-content: space-between;
+                    gap: 6px; min-width: 680px; flex-wrap: nowrap;">
+            <div style="display: flex; flex-direction: column; align-items: center; width: 110px; flex-shrink: 0;">
                 <div style="background: linear-gradient(135deg,#1d4ed8,#2563eb); border-radius: 12px;
-                            padding: 12px 14px; text-align: center; width: 86px; box-shadow: 0 4px 14px rgba(37,99,235,0.4);">
-                    <div style="font-size: 1.6rem;">👤</div>
-                    <div style="font-size: 0.72rem; font-weight: 700; color: #bfdbfe; margin-top: 4px;">User Search</div>
+                            padding: 12px 10px; text-align: center; width: 100%; box-shadow: 0 4px 12px rgba(37,99,235,0.35);">
+                    <div style="font-size: 1.5rem;">👤</div>
+                    <div style="font-size: 0.76rem; font-weight: 700; color: #ffffff; margin-top: 4px;">User Search</div>
+                    <div style="font-size: 0.65rem; color: #bfdbfe;">Query Input</div>
                 </div>
             </div>
-
-            <!-- Arrow -->
-            <div style="display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 56px;">
-                <div style="font-size: 0.65rem; color: #38bdf8; font-weight: 600; margin-bottom: 2px;">query</div>
+            <div style="display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 50px;">
+                <div style="font-size: 0.62rem; color: #38bdf8; font-weight: 600;">query</div>
                 <div style="height: 2px; width: 100%; background: linear-gradient(90deg, #2563eb, #38bdf8);"></div>
-                <div style="color: #38bdf8; font-size: 0.9rem; margin-top: -2px;">▶</div>
+                <div style="color: #38bdf8; font-size: 0.8rem; margin-top: -2px;">&#9654;</div>
             </div>
-
-            <!-- Node: Streamlit -->
-            <div style="display: flex; flex-direction: column; align-items: center; min-width: 100px;">
+            <div style="display: flex; flex-direction: column; align-items: center; width: 110px; flex-shrink: 0;">
                 <div style="background: linear-gradient(135deg,#0f766e,#0d9488); border-radius: 12px;
-                            padding: 12px 14px; text-align: center; width: 86px; box-shadow: 0 4px 14px rgba(13,148,136,0.4);">
-                    <div style="font-size: 1.6rem;">🖥️</div>
-                    <div style="font-size: 0.72rem; font-weight: 700; color: #ccfbf1; margin-top: 4px;">Streamlit UI</div>
+                            padding: 12px 10px; text-align: center; width: 100%; box-shadow: 0 4px 12px rgba(13,148,136,0.35);">
+                    <div style="font-size: 1.5rem;">🖥️</div>
+                    <div style="font-size: 0.76rem; font-weight: 700; color: #ffffff; margin-top: 4px;">Streamlit UI</div>
+                    <div style="font-size: 0.65rem; color: #ccfbf1;">app.py</div>
                 </div>
             </div>
-
-            <!-- Arrow -->
-            <div style="display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 56px;">
-                <div style="font-size: 0.65rem; color: #34d399; font-weight: 600; margin-bottom: 2px;">async call</div>
+            <div style="display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 50px;">
+                <div style="font-size: 0.62rem; color: #34d399; font-weight: 600;">async</div>
                 <div style="height: 2px; width: 100%; background: linear-gradient(90deg, #0d9488, #34d399);"></div>
-                <div style="color: #34d399; font-size: 0.9rem; margin-top: -2px;">▶</div>
+                <div style="color: #34d399; font-size: 0.8rem; margin-top: -2px;">&#9654;</div>
             </div>
-
-            <!-- Node: Python Backend -->
-            <div style="display: flex; flex-direction: column; align-items: center; min-width: 100px;">
+            <div style="display: flex; flex-direction: column; align-items: center; width: 120px; flex-shrink: 0;">
                 <div style="background: linear-gradient(135deg,#7c3aed,#8b5cf6); border-radius: 12px;
-                            padding: 12px 14px; text-align: center; width: 86px; box-shadow: 0 4px 14px rgba(139,92,246,0.4);">
-                    <div style="font-size: 1.6rem;">🐍</div>
-                    <div style="font-size: 0.72rem; font-weight: 700; color: #ede9fe; margin-top: 4px;">Python MCP Client</div>
+                            padding: 12px 10px; text-align: center; width: 100%; box-shadow: 0 4px 12px rgba(139,92,246,0.35);">
+                    <div style="font-size: 1.5rem;">🐍</div>
+                    <div style="font-size: 0.76rem; font-weight: 700; color: #ffffff; margin-top: 4px;">Python Client</div>
+                    <div style="font-size: 0.65rem; color: #ede9fe;">services/job_search</div>
                 </div>
             </div>
-
-            <!-- Arrow -->
-            <div style="display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 56px;">
-                <div style="font-size: 0.65rem; color: #a78bfa; font-weight: 600; margin-bottom: 2px;">stdio</div>
+            <div style="display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 50px;">
+                <div style="font-size: 0.62rem; color: #a78bfa; font-weight: 600;">stdio</div>
                 <div style="height: 2px; width: 100%; background: linear-gradient(90deg, #8b5cf6, #a78bfa);"></div>
-                <div style="color: #a78bfa; font-size: 0.9rem; margin-top: -2px;">▶</div>
+                <div style="color: #a78bfa; font-size: 0.8rem; margin-top: -2px;">&#9654;</div>
             </div>
-
-            <!-- Node: MCP Server -->
-            <div style="display: flex; flex-direction: column; align-items: center; min-width: 100px;">
+            <div style="display: flex; flex-direction: column; align-items: center; width: 120px; flex-shrink: 0;">
                 <div style="background: linear-gradient(135deg,#b45309,#d97706); border-radius: 12px;
-                            padding: 12px 14px; text-align: center; width: 86px; box-shadow: 0 4px 14px rgba(217,119,6,0.4);">
-                    <div style="font-size: 1.6rem;">🤖</div>
-                    <div style="font-size: 0.72rem; font-weight: 700; color: #fef3c7; margin-top: 4px;">Playwright MCP</div>
+                            padding: 12px 10px; text-align: center; width: 100%; box-shadow: 0 4px 12px rgba(217,119,6,0.35);">
+                    <div style="font-size: 1.5rem;">🤖</div>
+                    <div style="font-size: 0.76rem; font-weight: 700; color: #ffffff; margin-top: 4px;">Playwright MCP</div>
+                    <div style="font-size: 0.65rem; color: #fef3c7;">@playwright/mcp</div>
                 </div>
             </div>
-
-            <!-- Arrow -->
-            <div style="display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 56px;">
-                <div style="font-size: 0.65rem; color: #fbbf24; font-weight: 600; margin-bottom: 2px;">CDP</div>
+            <div style="display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 50px;">
+                <div style="font-size: 0.62rem; color: #fbbf24; font-weight: 600;">CDP</div>
                 <div style="height: 2px; width: 100%; background: linear-gradient(90deg, #d97706, #fbbf24);"></div>
-                <div style="color: #fbbf24; font-size: 0.9rem; margin-top: -2px;">▶</div>
+                <div style="color: #fbbf24; font-size: 0.8rem; margin-top: -2px;">&#9654;</div>
             </div>
-
-            <!-- Node: Browser -->
-            <div style="display: flex; flex-direction: column; align-items: center; min-width: 100px;">
+            <div style="display: flex; flex-direction: column; align-items: center; width: 120px; flex-shrink: 0;">
                 <div style="background: linear-gradient(135deg,#9f1239,#e11d48); border-radius: 12px;
-                            padding: 12px 14px; text-align: center; width: 86px; box-shadow: 0 4px 14px rgba(225,29,72,0.4);">
-                    <div style="font-size: 1.6rem;">🌐</div>
-                    <div style="font-size: 0.72rem; font-weight: 700; color: #ffe4e6; margin-top: 4px;">Chromium + Portals</div>
+                            padding: 12px 10px; text-align: center; width: 100%; box-shadow: 0 4px 12px rgba(225,29,72,0.35);">
+                    <div style="font-size: 1.5rem;">🌐</div>
+                    <div style="font-size: 0.76rem; font-weight: 700; color: #ffffff; margin-top: 4px;">Chromium Engine</div>
+                    <div style="font-size: 0.65rem; color: #ffe4e6;">Live Job Portals</div>
                 </div>
             </div>
         </div>
-
-        <!-- Return path label -->
-        <div style="text-align: center; margin-top: 14px;">
-            <span style="font-size: 0.75rem; color: #64748b;">
-                &larrhk; Extracted job listings flow back → Python filter/dedup → SQLite → Streamlit cards
+        <div style="text-align: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06);">
+            <span style="font-size: 0.76rem; color: #94a3b8;">
+                &#x21A9; Extracted listings flow back &rarr; Python Experience Filter & Deduplication &rarr; SQLite Persistence &rarr; Streamlit Cards
             </span>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # ── 5-TIER ARCHITECTURE ───────────────────────────────────────────────────────
     st.markdown("#### 🏛️ 5-Tier End-to-End System Architecture")
@@ -423,12 +410,11 @@ with tab_arch:
     for tier in tiers:
         color = tier["color"]
         alpha = tier["alpha"]
-        st.markdown(f"""
+        comp_tags = "".join(f'<code style="background:{alpha}0.12); border: 1px solid {alpha}0.3); color:{color}; padding: 3px 10px; border-radius: 6px; font-size: 0.74rem;">{c[0]}</code>&nbsp;<span style="color:#64748b; font-size:0.72rem; display:inline-flex; align-items:center;">{c[1]}</span>&nbsp;&nbsp;' for c in tier["components"])
+        render_html(f"""
         <div style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07);
                     border-left: 5px solid {color}; border-radius: 12px;
                     padding: 0; margin-bottom: 10px; overflow: hidden;">
-
-            <!-- Header bar -->
             <div style="background: {alpha}0.07); padding: 14px 20px;
                         display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
                 <div style="display: flex; align-items: center; gap: 12px;">
@@ -450,20 +436,18 @@ with tab_arch:
                     {tier["badge"]}
                 </span>
             </div>
-
-            <!-- Body -->
             <div style="padding: 14px 20px;">
                 <p style="color: #94a3b8; font-size: 0.86rem; margin: 0 0 12px 0; line-height: 1.6;">
                     {tier["desc"]}
                 </p>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    {"".join(f'<code style="background:{alpha}0.12); border: 1px solid {alpha}0.3); color:{color}; padding: 3px 10px; border-radius: 6px; font-size: 0.74rem;">{c[0]}</code>&nbsp;<span style="color:#64748b; font-size:0.72rem; display:inline-flex; align-items:center;">{c[1]}</span>&nbsp;&nbsp;' for c in tier["components"])}
+                    {comp_tags}
                 </div>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.write("")
 
     # ── EXECUTION LIFECYCLE ───────────────────────────────────────────────────────
     st.markdown("#### 🔄 MCP Execution Lifecycle — Step by Step")
@@ -486,7 +470,7 @@ with tab_arch:
     lc, rc = st.columns(2)
     for i, (num, color, title, desc) in enumerate(steps):
         col = lc if i % 2 == 0 else rc
-        col.markdown(f"""
+        render_html(f"""
         <div style="display: flex; gap: 14px; background: rgba(255,255,255,0.025);
                     border: 1px solid rgba(255,255,255,0.07); border-radius: 12px;
                     padding: 14px 16px; margin-bottom: 10px; align-items: flex-start;">
@@ -500,9 +484,9 @@ with tab_arch:
                 <div style="color: #94a3b8; font-size: 0.8rem; line-height: 1.55;">{desc}</div>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """, container=col)
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.write("")
 
     # ── JSON-RPC INSPECTOR ────────────────────────────────────────────────────────
     with st.expander("🔍 Protocol Inspector — Actual JSON-RPC 2.0 Payloads Over stdio", expanded=False):
@@ -517,10 +501,7 @@ with tab_arch:
   "params": {
     "name": "browser_navigate",
     "arguments": {
-      "url": "https://www.linkedin.com/jobs/search
-              ?keywords=Data+Engineer
-              &location=Bengaluru
-              &f_E=1,2"
+      "url": "https://www.linkedin.com/jobs/search?keywords=Data+Engineer&location=Bengaluru&f_E=1,2"
     }
   }
 }""", language="json")
@@ -563,7 +544,7 @@ with tab_arch:
   }
 }""", language="json")
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.write("")
 
     # ── COMPARISON TABLE ──────────────────────────────────────────────────────────
     st.markdown("#### ⚖️ MCP vs. Legacy Scraping — At a Glance")
@@ -577,25 +558,27 @@ with tab_arch:
         ("Dynamic Content Wait",      "❌ Fixed sleep hacks", "✅ browser_wait_for()"),
     ]
 
-    st.markdown("""
+    rows_html = "".join(f"""
+        <div style="display: grid; grid-template-columns: 2fr 1.4fr 1.4fr;
+                    padding: 10px 18px; font-size: 0.83rem;
+                    border-bottom: 1px solid rgba(255,255,255,0.04);
+                    background: rgba(255,255,255,0.01);">
+            <span style="color: #e2e8f0; font-weight: 600;">{row[0]}</span>
+            <span style="color: #fca5a5;">{row[1]}</span>
+            <span style="color: #86efac;">{row[2]}</span>
+        </div>
+    """ for row in comp_rows)
+
+    render_html(f"""
     <div style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 12px;">
         <div style="display: grid; grid-template-columns: 2fr 1.4fr 1.4fr; background: rgba(255,255,255,0.05);
                     padding: 10px 18px; font-size: 0.78rem; font-weight: 700; color: #94a3b8;
                     letter-spacing: 0.5px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.07);">
             <span>Feature</span><span>Legacy (Selenium / Requests)</span><span>MCP Architecture</span>
         </div>
-    """ + "".join(f"""
-        <div style="display: grid; grid-template-columns: 2fr 1.4fr 1.4fr;
-                    padding: 10px 18px; font-size: 0.83rem;
-                    border-bottom: 1px solid rgba(255,255,255,0.04);
-                    background: rgba(255,255,255,0.01);" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='rgba(255,255,255,0.01)'">
-            <span style="color: #e2e8f0; font-weight: 600;">{row[0]}</span>
-            <span style="color: #fca5a5;">{row[1]}</span>
-            <span style="color: #86efac;">{row[2]}</span>
-        </div>
-    """ for row in comp_rows) + """
+        {rows_html}
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # ── TECH STACK FOOTER ─────────────────────────────────────────────────────────
     st.markdown("#### 🧰 Technology Stack")
@@ -611,7 +594,7 @@ with tab_arch:
     ]
     cols = st.columns(4)
     for i, (icon, name, desc, color) in enumerate(tech_stack):
-        cols[i % 4].markdown(f"""
+        render_html(f"""
         <div style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07);
                     border-radius: 10px; padding: 12px 14px; margin-bottom: 10px;
                     display: flex; align-items: flex-start; gap: 10px;">
@@ -623,4 +606,4 @@ with tab_arch:
                 <div style="color: #64748b; font-size: 0.72rem; margin-top: 2px;">{desc}</div>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """, container=cols[i % 4])

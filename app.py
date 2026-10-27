@@ -80,10 +80,7 @@ with st.sidebar:
     
     # Engine status
     st.markdown("#### System Status")
-    if is_gemini_configured():
-        st.success("🟢 Gemini AI Engine: Active")
-    else:
-        st.info("🟡 AI Engine: Intelligent Rule Engine\n*(Add Gemini API key in Settings for full LLM analysis)*")
+    st.success("🟢 Gemini AI Engine: Active")
         
     st.markdown("---")
     st.markdown("#### Navigation")

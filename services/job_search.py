@@ -46,7 +46,7 @@ async def scrape_linkedin(
         url += "&f_E=1,2"
 
     await client.navigate(url)
-    await client.wait_for(time_s=3)
+    await client.wait_for(time_s=1.0)
 
     js_extract = """() => {
         const cards = Array.from(document.querySelectorAll('.base-card, ul.jobs-search__results-list li'));
@@ -105,7 +105,7 @@ async def scrape_internshala(
             url = f"https://internshala.com/jobs/keywords-{role_slug}/"
 
     await client.navigate(url)
-    await client.wait_for(time_s=3)
+    await client.wait_for(time_s=1.0)
 
     js_extract = """() => {
         const cards = Array.from(document.querySelectorAll('.individual_internship, div[id^="individual_internship_"], .internship_meta'));
@@ -149,7 +149,7 @@ async def scrape_naukri(
         url = f"https://www.naukri.com/{role_slug}-jobs"
 
     await client.navigate(url)
-    await client.wait_for(time_s=3.5)
+    await client.wait_for(time_s=1.2)
 
     js_extract = """() => {
         const cards = Array.from(document.querySelectorAll('.srp-jobtuple-wrapper, .cust-job-tuple, article.jobTuple'));

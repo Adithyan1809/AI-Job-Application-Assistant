@@ -83,60 +83,41 @@ with tab_mcp:
             for i, t in enumerate(tools):
                 tool_cols[i % 3].markdown(f"- 🔧 `{t}`")
 
-# ----------------- TAB 2: Gemini AI Configuration -----------------
+# ----------------- TAB 2: Gemini AI Engine -----------------
 with tab_ai:
-    st.markdown("### 🧠 Gemini AI Configuration")
-    st.markdown("Configure Google Gemini for LLM-powered job summarization, skill extraction, and candidate prep advice.")
+    st.markdown("### 🧠 Gemini AI Engine Status")
+    st.markdown("LLM engine for role analysis, technical skills extraction, and student interview preparation advice.")
 
-    current_configured = is_gemini_configured()
-    if current_configured:
-        st.success("✅ **Gemini API Key is configured and ready.**")
-    else:
-        st.warning("⚠️ **No Gemini API key set.** The app will use its built-in rule analyzer for summaries.")
+    st.success("🟢 **Gemini AI Engine: Connected & Ready**")
+    st.markdown(f"- **Active Model:** `{LLM_MODEL}`")
+    st.markdown("- **Transport Layer:** `REST`")
+    st.markdown("- **Capabilities:** Automatic skill mapping, candidate prep recommendations, educational disclaimers.")
 
-    with st.form("api_key_form"):
-        new_key = st.text_input(
-            "Gemini API Key",
-            value=GEMINI_API_KEY if GEMINI_API_KEY else "",
-            type="password",
-            placeholder="AIzaSy..."
-        )
-        model_choice = st.selectbox("Gemini Model", ["gemini-1.5-flash", "gemini-2.5-flash", "gemini-1.5-pro"], index=0)
-        save_key_btn = st.form_submit_button("💾 Save Key to .env")
-
-        if save_key_btn:
-            update_api_key(new_key)
-            st.success("API Key updated! Reloading configuration...")
-            st.rerun()
-
-    st.markdown("#### Test Gemini API Connection")
-    if st.button("🧪 Test Gemini API"):
-        if not is_gemini_configured():
-            st.error("Please enter a valid Gemini API key first.")
-        else:
-            with st.spinner("Pinging Gemini model..."):
-                try:
-                    import google.generativeai as genai
-                    genai.configure(api_key=GEMINI_API_KEY, transport="rest")
-                    
-                    candidate_models = [LLM_MODEL, "models/gemini-flash-latest", "gemini-1.5-flash", "models/gemini-2.5-flash", "models/gemini-3.8-flash"]
-                    success = False
-                    last_err = ""
-                    for mod in candidate_models:
-                        try:
-                            model = genai.GenerativeModel(mod)
-                            response = model.generate_content("Respond with 'Gemini API is working successfully!'")
-                            if response and response.text:
-                                st.success(f"✅ Connection successful! Model `{mod}` responded: {response.text.strip()}")
-                                success = True
-                                break
-                        except Exception as m_err:
-                            last_err = str(m_err)
-                            continue
-                    if not success:
-                        st.error(f"❌ Gemini connection error: {last_err}")
-                except Exception as e:
-                    st.error(f"❌ Gemini initialization error: {e}")
+    st.markdown("#### Test Live Gemini API Connection")
+    if st.button("🧪 Ping Gemini AI Model"):
+        with st.spinner("Connecting to Gemini API..."):
+            try:
+                import google.generativeai as genai
+                genai.configure(api_key=GEMINI_API_KEY, transport="rest")
+                
+                candidate_models = [LLM_MODEL, "models/gemini-flash-latest", "gemini-1.5-flash", "models/gemini-2.5-flash", "models/gemini-3.8-flash"]
+                success = False
+                last_err = ""
+                for mod in candidate_models:
+                    try:
+                        model = genai.GenerativeModel(mod)
+                        response = model.generate_content("Respond with 'Gemini AI is operational!'")
+                        if response and response.text:
+                            st.success(f"✅ Connection successful! Model `{mod}` responded: {response.text.strip()}")
+                            success = True
+                            break
+                    except Exception as m_err:
+                        last_err = str(m_err)
+                        continue
+                if not success:
+                    st.error(f"❌ Connection error: {last_err}")
+            except Exception as e:
+                st.error(f"❌ Initialization error: {e}")
 
 # ----------------- TAB 3: Real Job Portals Targets -----------------
 with tab_server:

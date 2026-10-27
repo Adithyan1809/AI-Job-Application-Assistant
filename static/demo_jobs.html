@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechCareers Campus & Fresher Job Portal</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --badge-green: #dcfce7;
+            --badge-green-txt: #166534;
+            --badge-blue: #dbeafe;
+            --badge-blue-txt: #1e40af;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg); color: var(--text-main); line-height: 1.5; padding: 24px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; }
+        header h1 { font-size: 2rem; color: #1e293b; margin-bottom: 8px; }
+        header p { color: var(--text-muted); font-size: 1.05rem; }
+        
+        .search-box {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        .form-group { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 0.85rem; font-weight: 600; color: #475569; }
+        .form-group input, .form-group select {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+        .btn-search {
+            align-self: flex-end;
+            padding: 10px 24px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            height: 42px;
+        }
+        .btn-search:hover { background: var(--primary-hover); }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .job-grid { display: grid; gap: 16px; }
+        .job-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .job-card:hover { transform: translateY(-2px); box-shadow: 0 6px 12px -2px rgba(0,0,0,0.06); }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .job-title { font-size: 1.25rem; font-weight: 700; color: #1e293b; text-decoration: none; }
+        .job-title:hover { color: var(--primary); }
+        .company-name { font-size: 1rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+        
+        .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+        .badge {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        .badge-loc { background: #f1f5f9; color: #334155; }
+        .badge-exp { background: var(--badge-blue); color: var(--badge-blue-txt); }
+        .badge-salary { background: var(--badge-green); color: var(--badge-green-txt); }
+        
+        .job-desc { color: #334155; font-size: 0.95rem; margin-bottom: 14px; line-height: 1.6; }
+        .job-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 12px; }
+        .apply-btn {
+            background: #0f172a;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .apply-btn:hover { background: #1e293b; }
+        .no-results {
+            background: white;
+            padding: 40px;
+            text-align: center;
+            border-radius: 10px;
+            border: 1px dashed var(--border);
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>TechCareers Campus & Fresher Job Portal</h1>
+            <p>Official Public Job Board for Students, Graduates, and Early Career Engineers</p>
+        </header>
+
+        <section class="search-box">
+            <div class="form-group">
+                <label for="search-role">Role or Keywords</label>
+                <input type="text" id="search-role" name="role" placeholder="e.g. Data Engineer, Python">
+            </div>
+            <div class="form-group">
+                <label for="search-location">Location</label>
+                <input type="text" id="search-location" name="location" placeholder="e.g. Bengaluru, Remote">
+            </div>
+            <div class="form-group">
+                <label for="filter-experience">Experience Level</label>
+                <select id="filter-experience" name="experience">
+                    <option value="">All Experience Levels</option>
+                    <option value="Fresher">Fresher</option>
+                    <option value="Internship">Internship</option>
+                    <option value="0-1 years">0-1 years</option>
+                    <option value="1-2 years">1-2 years</option>
+                </select>
+            </div>
+            <button class="btn-search" id="btn-search" onclick="filterJobs()">Search Jobs</button>
+        </section>
+
+        <div class="results-header">
+            <h2 id="results-count" style="font-size: 1.1rem; color: #475569;">Available Positions</h2>
+            <span style="font-size: 0.85rem; color: #64748b;">Live Playwright MCP Demo Endpoint</span>
+        </div>
+
+        <main class="job-grid" id="jobs-container">
+            <!-- Job Card 1 -->
+            <article class="job-card" data-testid="job-card" data-title="Junior Data Engineer" data-company="CloudScale Analytics" data-location="Bengaluru" data-experience="Fresher / 0-1 years" data-salary="₹6,50,000 - ₹8,50,000 / year" data-url="http://127.0.0.1:8765/jobs/1">
+                <div class="card-header">
+                    <div>
+                        <h3 class="job-title"><a href="http://127.0.0.1:8765/jobs/1" target="_blank">Junior Data Engineer</a></h3>
+                        <div class="company-name">CloudScale Analytics</div>
+                    </div>
+                </div>
+                <div class="badges">
+                    <span class="badge badge-loc">📍 Bengaluru</span>
+                    <span class="badge badge-exp">🎓 Fresher / 0-1 years</span>
+                    <span class="badge badge-salary">💰 ₹6,50,000 - ₹8,50,000 / year</span>
+                </div>
+                <p class="job-desc">
+                    Looking for energetic entry-level Data Engineers to design and maintain automated ETL data pipelines using Python, SQL, and Apache Spark. You will collaborate with senior data architects to process high-volume analytics workloads in BigQuery and Snowflake. Strong understanding of relational databases and data structures required.
+                </p>
+                <div class="job-footer">
+                    <span style="font-size: 0.8rem; color: #64748b;">Posted 2 days ago</span>
+                    <a class="apply-btn" href="http://127.0.0.1:8765/jobs/1" target="_blank">Apply Now</a>
+                </div>
+            </article>
+
+            <!-- Job Card 2 -->
+            <article class="job-card" data-testid="job-card" data-title="Associate Data Engineer" data-company="FinTech Global Services" data-location="Bengaluru" data-experience="0-1 years" data-salary="₹7,00,000 - ₹9,00,000 / year" data-url="http://127.0.0.1:8765/jobs/2">
+                <div class="card-header">
+                    <div>
+                        <h3 class="job-title"><a href="http://127.0.0.1:8765/jobs/2" target="_blank">Associate Data Engineer</a></h3>
+                        <div class="company-name">FinTech Global Services</div>
+                    </div>
+                </div>
+                <div class="badges">
+                    <span class="badge badge-loc">📍 Bengaluru</span>
+                    <span class="badge badge-exp">🎓 0-1 years</span>
+                    <span class="badge badge-salary">💰 ₹7,00,000 - ₹9,00,000 / year</span>
+                </div>
+                <p class="job-desc">
+                    Join our financial data engineering team to develop real-time transaction streaming pipelines using Apache Kafka, Python, and PostgreSQL. Ideal for recent computer science graduates with strong SQL skills, analytical thinking, and eagerness to learn distributed cloud architectures. Mentorship provided.
+                </p>
+                <div class="job-footer">
+                    <span style="font-size: 0.8rem; color: #64748b;">Posted 1 day ago</span>
+                    <a class="apply-btn" href="http://127.0.0.1:8765/jobs/2" target="_blank">Apply Now</a>
+                </div>
+            </article>
+
+            <!-- Job Card 3 -->
+            <article class="job-card" data-testid="job-card" data-title="Junior Python Developer" data-company="NextGen SoftTech" data-location="Bengaluru" data-experience="Fresher" data-salary="₹5,00,000 - ₹7,00,000 / year" data-url="http://127.0.0.1:8765/jobs/3">
+                <div class="card-header">
+                    <div>
+                        <h3 class="job-title"><a href="http://127.0.0.1:8765/jobs/3" target="_blank">Junior Python Developer</a></h3>
+                        <div class="company-name">NextGen SoftTech</div>
+                    </div>
+                </div>
+                <div class="badges">
+                    <span class="badge badge-loc">📍 Bengaluru</span>
+                    <span class="badge badge-exp">🎓 Fresher</span>
+                    <span class="badge badge-salary">💰 ₹5,00,000 - ₹7,00,000 / year</span>
+                </div>
+                <p class="job-desc">
+                    Seeking recent college graduates to build backend RESTful microservices and web automation tools using Python, FastAPI, and Playwright. Experience with Git, Linux basics, and OOP concepts will make you stand out. Great launchpad for fresh software developers.
+                </p>
+                <div class="job-footer">
+                    <span style="font-size: 0.8rem; color: #64748b;">Posted 3 days ago</span>
+                    <a class="apply-btn" href="http://127.0.0.1:8765/jobs/3" target="_blank">Apply Now</a>
+                </div>
+            </article>
+
+            <!-- Job Card 4 -->
+            <article class="job-card" data-testid="job-card" data-title="Frontend Developer Intern" data-company="PixelCraft Digital" data-location="Remote" data-experience="Internship" data-salary="₹25,000 / month" data-url="http://127.0.0.1:8765/jobs/4">
+                <div class="card-header">
+                    <div>
+                        <h3 class="job-title"><a href="http://127.0.0.1:8765/jobs/4" target="_blank">Frontend Developer Intern</a></h3>
+                        <div class="company-name">PixelCraft Digital</div>
+                    </div>
+                </div>
+                <div class="badges">
+                    <span class="badge badge-loc">📍 Remote</span>
+                    <span class="badge badge-exp">🎓 Internship</span>
+                    <span class="badge badge-salary">💰 ₹25,000 / month</span>
+                </div>
+                <p class="job-desc">
+                    Exciting 6-month paid internship opportunity for pre-final and final year college students. Build clean, interactive dashboards and web applications using HTML5, CSS3, modern JavaScript, and React. Opportunity to convert to full-time based on performance.
+                </p>
+                <div class="job-footer">
+                    <span style="font-size: 0.8rem; color: #64748b;">Posted 4 days ago</span>
+                    <a class="apply-btn" href="http://127.0.0.1:8765/jobs/4" target="_blank">Apply Now</a>
+                </div>
+            </article>
+
+            <!-- Job Card 5 -->
+            <article class="job-card" data-testid="job-card" data-title="Machine Learning Trainee" data-company="AI Horizon Labs" data-location="Bengaluru" data-experience="Fresher / 0-1 years" data-salary="₹6,00,000 / year" data-url="http://127.0.0.1:8765/jobs/5">
+                <div class="card-header">
+                    <div>
+                        <h3 class="job-title"><a href="http://127.0.0.1:8765/jobs/5" target="_blank">Machine Learning Trainee</a></h3>
+                        <div class="company-name">AI Horizon Labs</div>
+                    </div>
+                </div>
+                <div class="badges">
+                    <span class="badge badge-loc">📍 Bengaluru</span>
+                    <span class="badge badge-exp">🎓 Fresher / 0-1 years</span>
+                    <span class="badge badge-salary">💰 ₹6,00,000 / year</span>
+                </div>
+                <p class="job-desc">
+                    Are you passionate about AI and machine learning? Join our foundational AI engineering group. You will help with dataset curation, LLM prompt benchmarking, and model evaluation using Python, Pandas, and Scikit-Learn. Prior personal projects in ML or deep learning highly valued.
+                </p>
+                <div class="job-footer">
+                    <span style="font-size: 0.8rem; color: #64748b;">Posted 5 days ago</span>
+                    <a class="apply-btn" href="http://127.0.0.1:8765/jobs/5" target="_blank">Apply Now</a>
+                </div>
+            </article>
+
+            <!-- Job Card 6 -->
+            <article class="job-card" data-testid="job-card" data-title="QA Automation Engineer" data-company="Reliable Systems" data-location="Pune" data-experience="0-1 years" data-salary="₹4,80,000 - ₹6,00,000 / year" data-url="http://127.0.0.1:8765/jobs/6">
+                <div class="card-header">
+                    <div>
+                        <h3 class="job-title"><a href="http://127.0.0.1:8765/jobs/6" target="_blank">QA Automation Engineer</a></h3>
+                        <div class="company-name">Reliable Systems</div>
+                    </div>
+                </div>
+                <div class="badges">
+                    <span class="badge badge-loc">📍 Pune</span>
+                    <span class="badge badge-exp">🎓 0-1 years</span>
+                    <span class="badge badge-salary">💰 ₹4,80,000 - ₹6,00,000 / year</span>
+                </div>
+                <p class="job-desc">
+                    Design and execute automated testing suites for web services and APIs. Hands-on experience with Python, Playwright, or Selenium is a huge advantage. Good understanding of CI/CD concepts and software quality assurance fundamentals.
+                </p>
+                <div class="job-footer">
+                    <span style="font-size: 0.8rem; color: #64748b;">Posted 6 days ago</span>
+                    <a class="apply-btn" href="http://127.0.0.1:8765/jobs/6" target="_blank">Apply Now</a>
+                </div>
+            </article>
+        </main>
+    </div>
+
+    <script>
+        function filterJobs() {
+            const roleInput = document.getElementById('search-role').value.toLowerCase().trim();
+            const locInput = document.getElementById('search-location').value.toLowerCase().trim();
+            const expSelect = document.getElementById('filter-experience').value.toLowerCase().trim();
+            
+            const cards = document.querySelectorAll('.job-card');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const title = card.getAttribute('data-title').toLowerCase();
+                const desc = card.querySelector('.job-desc').innerText.toLowerCase();
+                const loc = card.getAttribute('data-location').toLowerCase();
+                const exp = card.getAttribute('data-experience').toLowerCase();
+                
+                const matchesRole = !roleInput || title.includes(roleInput) || desc.includes(roleInput);
+                const matchesLoc = !locInput || loc.includes(locInput);
+                const matchesExp = !expSelect || exp.includes(expSelect);
+
+                if (matchesRole && matchesLoc && matchesExp) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            const countElem = document.getElementById('results-count');
+            countElem.innerText = `Showing ${visibleCount} Positions`;
+        }
+
+        // Parse query params on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('role')) document.getElementById('search-role').value = params.get('role');
+            if (params.has('location')) document.getElementById('search-location').value = params.get('location');
+            if (params.has('experience')) document.getElementById('filter-experience').value = params.get('experience');
+            if (params.has('role') || params.has('location') || params.has('experience')) {
+                filterJobs();
+            }
+        });
+    </script>
+</body>
+</html>

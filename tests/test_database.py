@@ -16,7 +16,11 @@ from database import (
     delete_application,
     get_status_counts,
     clear_search_history,
-    reset_database
+    reset_database,
+    log_mcp_event,
+    get_mcp_logs,
+    clear_mcp_logs,
+    get_mcp_log_stats
 )
 
 
@@ -165,6 +169,68 @@ class TestDatabaseOperations(unittest.TestCase):
         deleted = delete_application(app_id, db_path=self.db_path)
         self.assertTrue(deleted)
         self.assertEqual(len(get_applications(db_path=self.db_path)), 0)
+
+    def test_mcp_logging_and_filtering(self):
+        """Test persisting and querying detailed MCP execution logs."""
+        id1 = log_mcp_event(
+            event_type="SESSION_START",
+            tool_name="client.connect",
+            arguments={"command": "npx", "args": ["@playwright/mcp@latest"]},
+            status="INFO",
+            db_path=self.db_path
+        )
+        self.assertGreater(id1, 0)
+
+        id2 = log_mcp_event(
+            event_type="TOOL_RESULT",
+            tool_name="browser_navigate",
+            arguments={"url": "https://www.linkedin.com/jobs"},
+            response="Navigated to 200 OK",
+            duration_ms=145.2,
+            status="SUCCESS",
+            db_path=self.db_path
+        )
+        self.assertGreater(id2, 0)
+
+        id3 = log_mcp_event(
+            event_type="TOOL_ERROR",
+            tool_name="browser_evaluate",
+            arguments={"function": "() => error"},
+            error_message="ReferenceError: error is not defined",
+            duration_ms=35.0,
+            status="ERROR",
+            db_path=self.db_path
+        )
+        self.assertGreater(id3, 0)
+
+        # Check total logs retrieved
+        all_logs = get_mcp_logs(db_path=self.db_path)
+        self.assertEqual(len(all_logs), 3)
+
+        # Filter by status
+        err_logs = get_mcp_logs(status="ERROR", db_path=self.db_path)
+        self.assertEqual(len(err_logs), 1)
+        self.assertEqual(err_logs[0]["tool_name"], "browser_evaluate")
+
+        # Filter by tool
+        nav_logs = get_mcp_logs(tool_name="browser_navigate", db_path=self.db_path)
+        self.assertEqual(len(nav_logs), 1)
+        self.assertEqual(nav_logs[0]["status"], "SUCCESS")
+
+        # Filter by search keyword
+        search_logs = get_mcp_logs(search="linkedin", db_path=self.db_path)
+        self.assertEqual(len(search_logs), 1)
+
+        # Stats calculation
+        stats = get_mcp_log_stats(db_path=self.db_path)
+        self.assertEqual(stats["total"], 3)
+        self.assertEqual(stats["success_cnt"], 1)
+        self.assertEqual(stats["error_cnt"], 1)
+        self.assertGreater(stats["avg_duration_ms"], 0)
+
+        # Clear logs
+        clear_mcp_logs(db_path=self.db_path)
+        self.assertEqual(len(get_mcp_logs(db_path=self.db_path)), 0)
 
 
 if __name__ == "__main__":

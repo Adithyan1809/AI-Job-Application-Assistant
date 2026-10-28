@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 from config import ALLOWED_DOMAINS, DEFAULT_USER_AGENT
 from models import JobListing
 from services.mcp_client import PlaywrightMCPClient
-from database import save_search_jobs
+from database import save_search_jobs, log_mcp_event
 
 
 def is_url_allowed(url: str) -> bool:
@@ -616,6 +616,12 @@ async def search_jobs_with_mcp(
                     report(f"Successfully extracted {len(filtered)} real opportunities from live job portals!", 1.0)
                     return filtered
         except Exception as mcp_err:
+            log_mcp_event(
+                event_type="FALLBACK_DIRECT",
+                tool_name="cloud_direct_scraper",
+                arguments={"role": role, "location": location, "portal": portal_choice, "reason": str(mcp_err)},
+                status="WARNING"
+            )
             report(f"Playwright MCP session ({mcp_err}) - switching to Direct Real-Portal Scraper...", 0.25)
 
     # Cloud environment or fallback scraper

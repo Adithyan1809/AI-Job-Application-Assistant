@@ -3,7 +3,7 @@
 import sqlite3
 from contextlib import contextmanager
 from datetime import datetime
-from typing import List, Optional, Tuple, Dict, Generator
+from typing import List, Optional, Tuple, Dict, Generator, Any
 from config import DATABASE_PATH
 from models import JobListing, Application, VALID_STATUSES
 
@@ -72,6 +72,26 @@ def init_db(db_path: str = DATABASE_PATH) -> None:
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_jobs_title ON jobs(title)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_jobs_company ON jobs(company)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_app_status ON applications(status)")
+
+        # Table for detailed Playwright MCP execution logs & protocol tracking
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS mcp_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                event_type TEXT NOT NULL,
+                tool_name TEXT,
+                arguments TEXT,
+                response TEXT,
+                response_full TEXT,
+                duration_ms REAL DEFAULT 0.0,
+                status TEXT NOT NULL DEFAULT 'SUCCESS',
+                error_message TEXT,
+                source TEXT DEFAULT 'Playwright MCP'
+            )
+        """)
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_mcp_logs_time ON mcp_logs(timestamp)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_mcp_logs_tool ON mcp_logs(tool_name)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_mcp_logs_status ON mcp_logs(status)")
 
 
 def save_search_jobs(jobs: List[JobListing], db_path: str = DATABASE_PATH) -> List[JobListing]:
@@ -290,4 +310,145 @@ def reset_database(db_path: str = DATABASE_PATH) -> None:
     with get_db(db_path) as cursor:
         cursor.execute("DROP TABLE IF EXISTS applications")
         cursor.execute("DROP TABLE IF EXISTS jobs")
+        cursor.execute("DROP TABLE IF EXISTS mcp_logs")
     init_db(db_path)
+
+
+def log_mcp_event(
+    event_type: str,
+    tool_name: Optional[str] = None,
+    arguments: Optional[Any] = None,
+    response: Optional[Any] = None,
+    duration_ms: float = 0.0,
+    status: str = "SUCCESS",
+    error_message: Optional[str] = None,
+    source: str = "Playwright MCP",
+    db_path: str = DATABASE_PATH
+) -> int:
+    """Log an MCP protocol event or tool execution to SQLite."""
+    import json
+    args_str = ""
+    if arguments is not None:
+        if isinstance(arguments, str):
+            args_str = arguments
+        else:
+            try:
+                args_str = json.dumps(arguments, ensure_ascii=False)
+            except Exception:
+                args_str = str(arguments)
+
+    resp_str = ""
+    resp_full = ""
+    if response is not None:
+        if isinstance(response, str):
+            resp_full = response
+        else:
+            try:
+                resp_full = json.dumps(response, ensure_ascii=False)
+            except Exception:
+                resp_full = str(response)
+        resp_str = (resp_full[:400] + "...") if len(resp_full) > 400 else resp_full
+
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        with get_db(db_path) as cursor:
+            cursor.execute("""
+                INSERT INTO mcp_logs (timestamp, event_type, tool_name, arguments, response, response_full, duration_ms, status, error_message, source)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (now, event_type, tool_name, args_str, resp_str, resp_full, round(duration_ms, 2), status, error_message, source))
+            return cursor.lastrowid or 0
+    except Exception as e:
+        # Failsafe logging so search/app never crashes due to log persistence
+        print(f"Error persisting MCP log event: {e}")
+        return 0
+
+
+def get_mcp_logs(
+    limit: int = 150,
+    event_type: Optional[str] = None,
+    tool_name: Optional[str] = None,
+    status: Optional[str] = None,
+    search: Optional[str] = None,
+    db_path: str = DATABASE_PATH
+) -> List[Dict[str, Any]]:
+    """Retrieve detailed MCP execution logs with optional multi-criteria filtering."""
+    query = "SELECT * FROM mcp_logs WHERE 1=1"
+    params = []
+
+    if event_type and event_type != "All":
+        query += " AND event_type = ?"
+        params.append(event_type)
+
+    if tool_name and tool_name != "All":
+        query += " AND tool_name = ?"
+        params.append(tool_name)
+
+    if status and status != "All":
+        query += " AND status = ?"
+        params.append(status)
+
+    if search and search.strip():
+        term = f"%{search.strip()}%"
+        query += " AND (tool_name LIKE ? OR arguments LIKE ? OR response LIKE ? OR error_message LIKE ?)"
+        params.extend([term, term, term, term])
+
+    query += " ORDER BY id DESC LIMIT ?"
+    params.append(limit)
+
+    logs = []
+    try:
+        with get_db(db_path) as cursor:
+            cursor.execute(query, tuple(params))
+            for row in cursor.fetchall():
+                logs.append(dict(row))
+    except Exception as e:
+        print(f"Error fetching MCP logs: {e}")
+    return logs
+
+
+def clear_mcp_logs(db_path: str = DATABASE_PATH) -> None:
+    """Clear all records from the mcp_logs table."""
+    with get_db(db_path) as cursor:
+        cursor.execute("DELETE FROM mcp_logs")
+
+
+def get_mcp_log_stats(db_path: str = DATABASE_PATH) -> Dict[str, Any]:
+    """Calculate aggregated stats over MCP execution logs."""
+    stats = {
+        "total": 0,
+        "success_cnt": 0,
+        "error_cnt": 0,
+        "avg_duration_ms": 0.0,
+        "success_rate": 100.0,
+        "tools_seen": []
+    }
+    try:
+        with get_db(db_path) as cursor:
+            cursor.execute("SELECT COUNT(*) as total FROM mcp_logs")
+            total = cursor.fetchone()["total"]
+
+            cursor.execute("SELECT COUNT(*) as success_cnt FROM mcp_logs WHERE status = 'SUCCESS'")
+            success_cnt = cursor.fetchone()["success_cnt"]
+
+            cursor.execute("SELECT COUNT(*) as error_cnt FROM mcp_logs WHERE status = 'ERROR'")
+            error_cnt = cursor.fetchone()["error_cnt"]
+
+            cursor.execute("SELECT AVG(duration_ms) as avg_lat FROM mcp_logs WHERE duration_ms > 0")
+            avg_lat_row = cursor.fetchone()
+            avg_lat = avg_lat_row["avg_lat"] if (avg_lat_row and avg_lat_row["avg_lat"]) else 0.0
+
+            cursor.execute("SELECT DISTINCT tool_name FROM mcp_logs WHERE tool_name IS NOT NULL AND tool_name != ''")
+            tools = [r["tool_name"] for r in cursor.fetchall()]
+
+            success_rate = (success_cnt / total * 100.0) if total > 0 else 100.0
+            return {
+                "total": total,
+                "success_cnt": success_cnt,
+                "error_cnt": error_cnt,
+                "avg_duration_ms": round(avg_lat, 1),
+                "success_rate": round(success_rate, 1),
+                "tools_seen": tools
+            }
+    except Exception as e:
+        print(f"Error getting MCP log stats: {e}")
+        return stats

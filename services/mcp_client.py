@@ -4,11 +4,13 @@ import os
 import sys
 import shutil
 import asyncio
+import time
 from typing import List, Dict, Any, Optional, Tuple
 
 from mcp.client.session import ClientSession
 from mcp.client.stdio import stdio_client, StdioServerParameters
 from config import PLAYWRIGHT_MCP_COMMAND, PLAYWRIGHT_MCP_ARGS, BROWSER_TIMEOUT, ensure_node_on_path
+from database import log_mcp_event
 
 
 class MCPConnectionError(Exception):
@@ -80,13 +82,30 @@ class PlaywrightMCPClient:
     async def connect(self) -> None:
         """Establish stdio connection and initialize MCP session with Playwright server."""
         executable = self._resolve_executable()
+        t0 = time.perf_counter()
         
         # Verify npx / node executable
         if not os.path.isfile(executable) and not shutil.which(executable) and not shutil.which(self.command):
-            raise MCPConnectionError(
+            err_msg = (
                 f"Could not find executable '{self.command}' or '{executable}' on system PATH. "
                 "Please verify that Node.js and npm are installed (visit https://nodejs.org or run 'winget install OpenJS.NodeJS')."
             )
+            log_mcp_event(
+                event_type="SESSION_ERROR",
+                tool_name="client.connect",
+                arguments={"command": self.command, "resolved": executable},
+                error_message=err_msg,
+                duration_ms=0.0,
+                status="ERROR"
+            )
+            raise MCPConnectionError(err_msg)
+
+        log_mcp_event(
+            event_type="SESSION_START",
+            tool_name="client.connect",
+            arguments={"command": executable, "args": self.args},
+            status="INFO"
+        )
 
         env = dict(os.environ)
         # Ensure utf-8 encoding for stdio
@@ -119,15 +138,45 @@ class PlaywrightMCPClient:
             tools_resp = await self._session.list_tools()
             self._available_tools = [t.name for t in tools_resp.tools]
 
+            dur = (time.perf_counter() - t0) * 1000.0
+            log_mcp_event(
+                event_type="TOOL_DISCOVERY",
+                tool_name="list_tools",
+                arguments={"timeout": self.timeout},
+                response={"tools_count": len(self._available_tools), "tools": self._available_tools},
+                duration_ms=dur,
+                status="SUCCESS"
+            )
+
         except asyncio.TimeoutError:
             await self.close()
-            raise MCPConnectionError(
+            dur = (time.perf_counter() - t0) * 1000.0
+            err_msg = (
                 f"Connection to Playwright MCP timed out after {self.timeout}s. "
                 "First-time package download through npx may require more time or an active network."
             )
+            log_mcp_event(
+                event_type="SESSION_ERROR",
+                tool_name="client.connect",
+                arguments={"command": executable},
+                error_message=err_msg,
+                duration_ms=dur,
+                status="ERROR"
+            )
+            raise MCPConnectionError(err_msg)
         except Exception as e:
             await self.close()
-            raise MCPConnectionError(f"Failed to initialize Playwright MCP session: {e}") from e
+            dur = (time.perf_counter() - t0) * 1000.0
+            err_msg = f"Failed to initialize Playwright MCP session: {e}"
+            log_mcp_event(
+                event_type="SESSION_ERROR",
+                tool_name="client.connect",
+                arguments={"command": executable},
+                error_message=err_msg,
+                duration_ms=dur,
+                status="ERROR"
+            )
+            raise MCPConnectionError(err_msg) from e
 
     async def close(self) -> None:
         """Gracefully terminate session and streams."""
@@ -148,6 +197,12 @@ class PlaywrightMCPClient:
             self._read_stream = None
             self._write_stream = None
 
+        log_mcp_event(
+            event_type="SESSION_CLOSE",
+            tool_name="client.close",
+            status="INFO"
+        )
+
     def _ensure_connected(self) -> ClientSession:
         if not self._session:
             raise MCPConnectionError("MCP Client is not connected. Call connect() first.")
@@ -163,13 +218,37 @@ class PlaywrightMCPClient:
     async def call_tool(self, name: str, arguments: Dict[str, Any]) -> str:
         """Call any generic tool on the Playwright MCP server and extract text response."""
         session = self._ensure_connected()
-        result = await session.call_tool(name, arguments=arguments)
-        
-        texts = []
-        for c in result.content:
-            if hasattr(c, "text") and c.text:
-                texts.append(c.text)
-        return "\n".join(texts)
+        t0 = time.perf_counter()
+        try:
+            result = await session.call_tool(name, arguments=arguments)
+            dur = (time.perf_counter() - t0) * 1000.0
+            
+            texts = []
+            for c in result.content:
+                if hasattr(c, "text") and c.text:
+                    texts.append(c.text)
+            resp_text = "\n".join(texts)
+
+            log_mcp_event(
+                event_type="TOOL_RESULT",
+                tool_name=name,
+                arguments=arguments,
+                response=resp_text,
+                duration_ms=dur,
+                status="SUCCESS"
+            )
+            return resp_text
+        except Exception as e:
+            dur = (time.perf_counter() - t0) * 1000.0
+            log_mcp_event(
+                event_type="TOOL_ERROR",
+                tool_name=name,
+                arguments=arguments,
+                error_message=str(e),
+                duration_ms=dur,
+                status="ERROR"
+            )
+            raise
 
     async def navigate(self, url: str) -> str:
         """

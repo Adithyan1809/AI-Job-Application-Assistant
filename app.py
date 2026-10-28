@@ -89,6 +89,7 @@ with st.sidebar:
     st.markdown("- ⭐ **Saved Jobs** (See page in sidebar)")
     st.markdown("- 📊 **Application Tracker**")
     st.markdown("- ⚙️ **Settings & Diagnostics**")
+    st.markdown("- 📋 **Detailed MCP Logs**")
     
     st.markdown("---")
     st.caption("🎓 Designed for college assignments & fresh graduate career exploration.")

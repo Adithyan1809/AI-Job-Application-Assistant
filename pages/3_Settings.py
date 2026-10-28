@@ -91,6 +91,11 @@ with tab_mcp:
             for i, t in enumerate(tools):
                 tool_cols[i % 3].markdown(f"- 🔧 `{t}`")
 
+    st.markdown("---")
+    st.markdown("#### 📋 Detailed Protocol Telemetry & Logs")
+    st.markdown("Live inspect JSON-RPC 2.0 messages, tool execution latency, browser automation lifecycle, and `stdio` diagnostics:")
+    st.page_link("pages/4_Detailed_MCP_Logs.py", label="View Detailed MCP Logs & Playground", icon="📋", use_container_width=True)
+
 # ----------------- TAB 2: Gemini AI Engine -----------------
 with tab_ai:
     st.markdown("### 🧠 Gemini AI Engine Status")

@@ -1,25 +1,54 @@
 """Page 4: Detailed Model Context Protocol (MCP) Logs & Protocol Inspector."""
 
+import os
+import sys
 import json
 import asyncio
-import streamlit as st
-import pandas as pd
+import importlib
+from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any
 
+# Ensure project root directory is in sys.path (critical for Streamlit Cloud multi-page apps)
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+import streamlit as st
+import pandas as pd
+
+import config
 from config import (
     APP_TITLE,
     PLAYWRIGHT_MCP_COMMAND,
     PLAYWRIGHT_MCP_ARGS_STR
 )
-from database import (
-    init_db,
-    get_mcp_logs,
-    clear_mcp_logs,
-    get_mcp_log_stats,
-    log_mcp_event
-)
-from services.mcp_client import PlaywrightMCPClient, check_mcp_health
+
+import database
+# Auto-reload database module if cached version in running Streamlit process lacks new log functions
+if not hasattr(database, "get_mcp_logs"):
+    try:
+        database = importlib.reload(database)
+    except Exception:
+        pass
+
+init_db = getattr(database, "init_db", lambda *a, **k: None)
+get_mcp_logs = getattr(database, "get_mcp_logs", lambda *a, **k: [])
+clear_mcp_logs = getattr(database, "clear_mcp_logs", lambda *a, **k: None)
+get_mcp_log_stats = getattr(database, "get_mcp_log_stats", lambda *a, **k: {
+    "total": 0, "success_cnt": 0, "error_cnt": 0, "avg_duration_ms": 0.0, "success_rate": 100.0, "tools_seen": []
+})
+log_mcp_event = getattr(database, "log_mcp_event", lambda *a, **k: 0)
+
+import services.mcp_client
+if not hasattr(services.mcp_client, "check_mcp_health"):
+    try:
+        services.mcp_client = importlib.reload(services.mcp_client)
+    except Exception:
+        pass
+
+PlaywrightMCPClient = getattr(services.mcp_client, "PlaywrightMCPClient", None)
+check_mcp_health = getattr(services.mcp_client, "check_mcp_health", lambda: (False, "MCP client initializing...", []))
 
 init_db()
 

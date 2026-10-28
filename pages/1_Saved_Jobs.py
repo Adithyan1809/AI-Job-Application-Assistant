@@ -1,6 +1,15 @@
 """Page 1: Saved Jobs - View and manage bookmarked opportunities."""
 
+import os
+import sys
+from pathlib import Path
 import urllib.parse
+
+# Ensure application root directory is on sys.path
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 import streamlit as st
 from config import APP_TITLE
 from database import (
